@@ -37,13 +37,15 @@ jobs:
         cache-dependency-glob: "backend/pyproject.toml"
 
     - name: Install dependencies
-      run: uv sync --dev
+      run: |
+        uv venv
+        uv pip install -e ".[dev]"
 
     - name: Run pylint
       id: pylint
       run: |
         echo "Running pylint..."
-        if uv run pylint src > pylint-output.txt 2>&1; then
+        if .venv/bin/pylint src > pylint-output.txt 2>&1; then
           echo "PYLINT_PASSED=true" >> $GITHUB_ENV
           echo "No pylint errors found!"
         else
@@ -57,7 +59,7 @@ jobs:
       id: ruff
       run: |
         echo "Running ruff check..."
-        if uv run ruff check . > ruff-output.txt 2>&1; then
+        if .venv/bin/ruff check . > ruff-output.txt 2>&1; then
           echo "RUFF_PASSED=true" >> $GITHUB_ENV
           echo "No ruff errors found!"
         else
@@ -71,7 +73,7 @@ jobs:
       id: mypy
       run: |
         echo "Running mypy..."
-        if uv run mypy . > mypy-output.txt 2>&1; then
+        if .venv/bin/mypy . > mypy-output.txt 2>&1; then
           echo "MYPY_PASSED=true" >> $GITHUB_ENV
           echo "No mypy errors found"
         else
