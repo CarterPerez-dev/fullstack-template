@@ -30,22 +30,24 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: Set up uv
-      uses: astral-sh/setup-uv@v4
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
       with:
-        enable-cache: true
-        cache-dependency-glob: "backend/pyproject.toml"
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('backend/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
     - name: Install dependencies
       run: |
-        uv venv
-        uv pip install -e ".[dev]"
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
 
     - name: Run pylint
       id: pylint
       run: |
         echo "Running pylint..."
-        if .venv/bin/pylint src > pylint-output.txt 2>&1; then
+        if pylint src > pylint-output.txt 2>&1; then
           echo "PYLINT_PASSED=true" >> $GITHUB_ENV
           echo "No pylint errors found!"
         else
@@ -59,7 +61,7 @@ jobs:
       id: ruff
       run: |
         echo "Running ruff check..."
-        if .venv/bin/ruff check . > ruff-output.txt 2>&1; then
+        if ruff check . > ruff-output.txt 2>&1; then
           echo "RUFF_PASSED=true" >> $GITHUB_ENV
           echo "No ruff errors found!"
         else
@@ -73,7 +75,7 @@ jobs:
       id: mypy
       run: |
         echo "Running mypy..."
-        if .venv/bin/mypy . > mypy-output.txt 2>&1; then
+        if mypy . > mypy-output.txt 2>&1; then
           echo "MYPY_PASSED=true" >> $GITHUB_ENV
           echo "No mypy errors found"
         else

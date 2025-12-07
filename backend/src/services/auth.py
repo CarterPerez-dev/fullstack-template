@@ -152,7 +152,7 @@ class AuthService:
 
         access_token = create_access_token(user.id, user.token_version)
 
-        raw_refresh, new_hash, expires_at = create_refresh_token(
+        _, new_hash, expires_at = create_refresh_token(
             user.id, stored_token.family_id
         )
 
