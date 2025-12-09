@@ -103,21 +103,7 @@ Infrastructure
 
 ----
 
-Contributing
-============
-
-See `CONTRIBUTING.rst <CONTRIBUTING.rst>`_ for development setup and guidelines.
-
-----
-
 License
 =======
 
-MIT License - see `LICENSE <LICENSE>`_ for details.
-
-----
-
-Security
-========
-
-See `SECURITY.rst <SECURITY.rst>`_ for our security policy and how to report vulnerabilities.
+MIT License - see - `LICENSE <https://github.com/CarterPerez-dev/fullstack-template/blob/documentation/docs/templates/LICENSE>`_
