@@ -1,6 +1,6 @@
 # =============================================================================
 # AngelaMos | 2025
-# justfile
+# Justfile
 # =============================================================================
 
 set dotenv-load
@@ -41,6 +41,30 @@ pylint *ARGS:
 
 [group('lint')]
 lint: ruff pylint
+
+# =============================================================================
+# Frontend Linting
+# =============================================================================
+
+[group('frontend')]
+biome *ARGS:
+    cd frontend && pnpm biome check . {{ARGS}}
+
+[group('frontend')]
+biome-fix:
+    cd frontend && pnpm biome check --write .
+
+[group('frontend')]
+stylelint *ARGS:
+    cd frontend && pnpm stylelint '**/*.scss' {{ARGS}}
+
+[group('frontend')]
+stylelint-fix:
+    cd frontend && pnpm stylelint '**/*.scss' --fix
+
+[group('frontend')]
+tsc *ARGS:
+    cd frontend && pnpm tsc --noEmit {{ARGS}}
 
 # =============================================================================
 # Type Checking

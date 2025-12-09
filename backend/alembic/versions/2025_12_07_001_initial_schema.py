@@ -1,7 +1,7 @@
 """initial_schema
 
 Revision ID: ee8bde7caa8b
-Revises: 8021b4e2cf02
+Revises:
 Create Date: 2025-12-07 21:27:04.856781
 """
 from typing import Sequence, Union
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 revision: str = 'ee8bde7caa8b'
-down_revision: Union[str, None] = '8021b4e2cf02'
+down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
