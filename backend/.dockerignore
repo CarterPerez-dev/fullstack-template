@@ -83,11 +83,3 @@ logs/
 .DS_Store
 Thumbs.db
 *.bak
-
-# Frontend (when it exists at ../frontend)
-node_modules/
-.next/
-.nuxt/
-.output/
-.cache/
-*.tsbuildinfo

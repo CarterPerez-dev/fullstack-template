@@ -9,7 +9,7 @@ from httpx import AsyncClient
 from src.models.User import User
 
 
-URL_USERS = "/v1/users"
+URL_USERS = "/v1/admin/users"
 URL_USER_ME = "/v1/users/me"
 
 
