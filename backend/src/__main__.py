@@ -1,6 +1,6 @@
 """
 ⒸAngelaMos | 2025
-main.py
+__main__.py
 """
 import uvicorn
 
@@ -12,7 +12,7 @@ app = create_app()
 
 if __name__ == "__main__":
     uvicorn.run(
-        "src.main:app",
+        "src.__main__:app",
         host = settings.HOST,
         port = settings.PORT,
         reload = settings.RELOAD,

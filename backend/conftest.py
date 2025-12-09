@@ -83,7 +83,7 @@ async def client(db_session: AsyncSession) -> AsyncIterator[AsyncClient]:
     """
     Async HTTP client with DB session override
     """
-    from src.main import app
+    from src.__main__ import app
 
     async def override_get_db():
         yield db_session
