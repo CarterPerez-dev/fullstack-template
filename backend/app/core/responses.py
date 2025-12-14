@@ -5,7 +5,7 @@ responses.py
 
 from typing import Any
 
-from schemas.errors import ErrorDetail
+from .error_schemas import ErrorDetail
 
 
 AUTH_401: dict[int | str,

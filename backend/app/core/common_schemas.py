@@ -1,10 +1,10 @@
 """
 ⒸAngelaMos | 2025
-common.py
+common_schemas.py
 """
 
 from config import HealthStatus
-from schemas.base import BaseSchema
+from .base_schema import BaseSchema
 
 
 class HealthResponse(BaseSchema):

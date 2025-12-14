@@ -3,7 +3,7 @@ AngelaMos | 2025
 __init__.py
 """
 
-from middleware.correlation import CorrelationIdMiddleware
+from .correlation import CorrelationIdMiddleware
 
 
 __all__ = [

@@ -18,17 +18,17 @@ from config import (
     TokenType,
     UserRole,
 )
-from core.database import get_db_session
-from core.exceptions import (
+from .database import get_db_session
+from .exceptions import (
     InactiveUser,
     PermissionDenied,
     TokenError,
     TokenRevokedError,
     UserNotFound,
 )
-from models.User import User
-from core.security import decode_access_token
-from repositories.user import UserRepository
+from user.User import User
+from .security import decode_access_token
+from user.repository import UserRepository
 
 
 oauth2_scheme = OAuth2PasswordBearer(

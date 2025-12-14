@@ -1,6 +1,6 @@
 """
 ⒸAngelaMos | 2025
-base.py
+base_repository.py
 """
 
 from collections.abc import Sequence
@@ -14,7 +14,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.Base import Base
+from .Base import Base
 
 
 ModelT = TypeVar("ModelT", bound = Base)

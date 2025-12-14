@@ -1,6 +1,6 @@
 """
 ⒸAngelaMos | 2025
-health.py
+health_routes.py
 """
 
 from fastapi import (
@@ -14,11 +14,11 @@ from config import (
     settings,
     HealthStatus,
 )
-from schemas.common import (
+from .common_schemas import (
     HealthResponse,
     HealthDetailedResponse,
 )
-from core.database import sessionmanager
+from .database import sessionmanager
 
 
 router = APIRouter(tags = ["health"])
