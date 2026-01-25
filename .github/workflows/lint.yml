@@ -146,12 +146,11 @@ jobs:
           fi
           echo ''
           echo '<!-- lint-check-comment-marker -->'
-        } > ../lint-report.md
+        } > lint-report.md
 
     - name: Post PR Comment
       if: github.event_name == 'pull_request'
       uses: peter-evans/create-or-update-comment@v4
       with:
         issue-number: ${{ github.event.pull_request.number }}
-        body-path: lint-report.md
-        comment-marker: lint-check-comment-marker
+        body-path: backends/fastapi/lint-report.md
