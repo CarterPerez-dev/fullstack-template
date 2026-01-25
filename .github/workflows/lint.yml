@@ -19,7 +19,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: backend
+        working-directory: backends/fastapi
 
     steps:
     - name: Checkout code
@@ -30,24 +30,21 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: Cache pip dependencies
-      uses: actions/cache@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('backend/pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+        enable-cache: true
+        cache-dependency-glob: "backends/fastapi/pyproject.toml"
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+        uv sync --all-extras
 
     - name: Run pylint
       id: pylint
       run: |
         echo "Running pylint..."
-        if pylint app > pylint-output.txt 2>&1; then
+        if uv run pylint app > pylint-output.txt 2>&1; then
           echo "PYLINT_PASSED=true" >> $GITHUB_ENV
           echo "No pylint errors found!"
         else
@@ -61,7 +58,7 @@ jobs:
       id: ruff
       run: |
         echo "Running ruff check..."
-        if ruff check app > ruff-output.txt 2>&1; then
+        if uv run ruff check app > ruff-output.txt 2>&1; then
           echo "RUFF_PASSED=true" >> $GITHUB_ENV
           echo "No ruff errors found!"
         else
@@ -76,7 +73,7 @@ jobs:
       run: |
         echo "Running mypy..."
         cd app
-        if mypy . > ../mypy-output.txt 2>&1; then
+        if uv run mypy . > ../mypy-output.txt 2>&1; then
           echo "MYPY_PASSED=true" >> $GITHUB_ENV
           echo "No mypy errors found"
         else
@@ -149,12 +146,11 @@ jobs:
           fi
           echo ''
           echo '<!-- lint-check-comment-marker -->'
-        } > ../lint-report.md
+        } > lint-report.md
 
     - name: Post PR Comment
       if: github.event_name == 'pull_request'
       uses: peter-evans/create-or-update-comment@v4
       with:
         issue-number: ${{ github.event.pull_request.number }}
-        body-path: lint-report.md
-        comment-marker: lint-check-comment-marker
+        body-path: backends/fastapi/lint-report.md
