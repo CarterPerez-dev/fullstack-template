@@ -1,0 +1,49 @@
+# =============================================================================
+# AngelaMos | 2026
+# dev.compose.yml
+# =============================================================================
+# Development compose - Nginx + Vite dev server with HMR
+# Uses .env.development
+# =============================================================================
+
+name: ${APP_NAME:-no-auth-template}-dev
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: ${APP_NAME:-no-auth-template}-nginx-dev
+    ports:
+      - "${NGINX_HOST_PORT:-58495}:80"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/dev.nginx:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      frontend:
+        condition: service_started
+    networks:
+      - app
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./react-scss
+      dockerfile: ../infra/docker/vite.dev
+    container_name: ${APP_NAME:-no-auth-template}-frontend-dev
+    ports:
+      - "${FRONTEND_HOST_PORT:-15723}:5173"
+    volumes:
+      - ./react-scss:/app
+      - frontend_modules:/app/node_modules
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-/api}
+      - VITE_APP_TITLE=${VITE_APP_TITLE:-My App}
+    networks:
+      - app
+    restart: unless-stopped
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  frontend_modules:

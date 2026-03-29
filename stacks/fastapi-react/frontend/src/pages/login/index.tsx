@@ -47,8 +47,11 @@ export function Component(): React.ReactElement {
     <div className={styles.page}>
       <div className={styles.card}>
         <div className={styles.header}>
+          <Link to={ROUTES.HOME} className={styles.backLink}>
+            &larr; Back
+          </Link>
+          <span className={styles.subtitle}>Authentication Required</span>
           <h1 className={styles.title}>Login</h1>
-          <p className={styles.subtitle}>Welcome back</p>
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>

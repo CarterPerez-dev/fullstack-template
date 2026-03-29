@@ -11,85 +11,105 @@ import styles from './landing.module.scss'
 export function Component(): React.ReactElement {
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Full Stack Template</h1>
-        <p className={styles.subtitle}>by Carter Perez</p>
+      <nav className={styles.topBar}>
+        <div className={styles.topLeft}>
+          <span className={styles.mark}>FST</span>
+          <span>V1.0</span>
+        </div>
+        <div className={styles.topRight}>
+          <span>FASTAPI + REACT</span>
+          <span className={styles.status}>OPERATIONAL</span>
+        </div>
+      </nav>
+
+      <div className={styles.hero}>
+        <h1 className={styles.heroTitle}>
+          Build
+          <br />
+          Production
+          <br />
+          Systems
+        </h1>
+        <p className={styles.heroSub}>
+          Opinionated full-stack template for medium-large scale applications.
+          Modern patterns, strict typing, security best practices.
+        </p>
+      </div>
+
+      <div className={styles.pattern} />
+
+      <div className={styles.grid}>
+        <section className={styles.cell}>
+          <span className={styles.cellLabel}>01 — Frontend</span>
+          <ul className={styles.list}>
+            <li>React 19 + TypeScript strict mode</li>
+            <li>TanStack Query server state caching</li>
+            <li>Zustand stores with persistence</li>
+            <li>Axios interceptors + auto token refresh</li>
+            <li>Zod runtime validation</li>
+            <li>SCSS modules + design tokens</li>
+          </ul>
+        </section>
+
+        <section className={styles.cell}>
+          <span className={styles.cellLabel}>02 — Backend</span>
+          <ul className={styles.list}>
+            <li>DDD + DI Architecture</li>
+            <li>FastAPI async/await throughout</li>
+            <li>SQLAlchemy 2.0+ async + pooling</li>
+            <li>JWT auth with token rotation</li>
+            <li>Argon2id hashing</li>
+            <li>Pydantic v2 strict validation</li>
+          </ul>
+        </section>
+
+        <section className={styles.cell}>
+          <span className={styles.cellLabel}>03 — Infrastructure</span>
+          <ul className={styles.list}>
+            <li>Docker Compose dev/prod configs</li>
+            <li>Nginx reverse proxy + rate limiting</li>
+            <li>PostgreSQL 18 + Redis 7</li>
+            <li>Health checks + graceful shutdown</li>
+          </ul>
+        </section>
+
+        <section className={styles.cell}>
+          <span className={styles.cellLabel}>04 — DevOps</span>
+          <ul className={styles.list}>
+            <li>GitHub Actions CI pipeline</li>
+            <li>Ruff, Pylint, Mypy, Biome linting</li>
+            <li>Strict type checking both ends</li>
+            <li>Alembic async migrations</li>
+          </ul>
+        </section>
+      </div>
+
+      <div className={styles.actions}>
+        <Link to={ROUTES.REGISTER} className={styles.primaryBtn}>
+          Try Auth Flow
+        </Link>
+        <a
+          href="/api/docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.secondaryBtn}
+        >
+          API Docs
+        </a>
+      </div>
+
+      <footer className={styles.footer}>
+        <span>© AngelaMos + CarterPerez-dev · 2026</span>
         <a
           href="https://github.com/CarterPerez-dev/fullstack-template"
           target="_blank"
           rel="noopener noreferrer"
           className={styles.github}
-          aria-label="View source on GitHub"
+          aria-label="View on GitHub"
         >
           <FiGithub />
         </a>
-      </header>
-
-      <div className={styles.content}>
-        <p className={styles.description}>
-          Boilerplate for medium-large scale applications. Built with modern
-          patterns, strict typing, and security best practices.
-        </p>
-
-        <div className={styles.sections}>
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Frontend</h2>
-            <ul className={styles.features}>
-              <li>React 19 + TypeScript with strict mode</li>
-              <li>TanStack Query for server state caching</li>
-              <li>Zustand stores with persistence</li>
-              <li>Axios interceptors with auto token refresh</li>
-              <li>Zod runtime validation on API responses</li>
-              <li>SCSS modules with design tokens</li>
-            </ul>
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Backend</h2>
-            <ul className={styles.features}>
-              <li>DDD + DI Architecture</li>
-              <li>FastAPI with async/await throughout</li>
-              <li>SQLAlchemy 2.0+ async with connection pooling</li>
-              <li>JWT auth with token rotation and replay detection</li>
-              <li>Argon2id hashing with timing safe verification</li>
-              <li>Pydantic v2 strict validation</li>
-            </ul>
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Infrastructure</h2>
-            <ul className={styles.features}>
-              <li>Docker Compose with dev/prod configs</li>
-              <li>Nginx reverse proxy with rate limiting</li>
-              <li>PostgreSQL 18 + Redis 7</li>
-              <li>Health checks and graceful shutdown</li>
-            </ul>
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>DevOps</h2>
-            <ul className={styles.features}>
-              <li>GitHub Actions CI (Ruff, Pylint, Mypy, Biome)</li>
-              <li>Strict type checking on both ends</li>
-              <li>Alembic async migrations</li>
-            </ul>
-          </section>
-        </div>
-
-        <div className={styles.actions}>
-          <Link to={ROUTES.REGISTER} className={styles.button}>
-            Try Auth Flow
-          </Link>
-          <a
-            href="/api/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.buttonOutline}
-          >
-            API Docs
-          </a>
-        </div>
-      </div>
+      </footer>
     </div>
   )
 }

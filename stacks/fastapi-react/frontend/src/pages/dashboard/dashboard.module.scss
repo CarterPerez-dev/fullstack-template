@@ -1,30 +1,50 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // dashboard.module.scss
 // ===================
 
-@use '@/styles' as *;
+@use '../../styles' as *;
 
 .page {
-  min-height: calc(100vh - 56px);
-  padding: $space-6;
-  background-color: $bg-default;
+  @include flex-column;
 }
 
 .container {
-  max-width: 800px;
-  margin: 0 auto;
+  @include flex-column;
+  gap: $space-8;
 }
 
 .header {
-  margin-bottom: $space-6;
+  @include flex-column;
+  gap: $space-2;
+}
+
+.headerMeta {
+  display: flex;
+  gap: $space-6;
+}
+
+.tag {
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-widest;
+  color: $text-lighter;
+
+  &:first-child {
+    color: $accent-default;
+  }
 }
 
 .title {
-  font-size: $font-size-2xl;
-  font-weight: $font-weight-semibold;
-  color: $text-default;
-  margin-bottom: $space-2;
+  font-weight: $font-weight-black;
+  font-size: $font-size-3xl;
+  letter-spacing: $tracking-tight;
+  line-height: $line-height-tight;
+
+  @include breakpoint-up('md') {
+    font-size: $font-size-4xl;
+  }
 }
 
 .subtitle {
@@ -32,121 +52,120 @@
   color: $text-lighter;
 }
 
-.userCard {
+.userBar {
   display: flex;
   align-items: center;
-  gap: $space-4;
-  padding: $space-5;
-  background: $bg-surface-100;
+  gap: $space-6;
+  padding: $space-4 $space-5;
   border: 1px solid $border-default;
-  border-radius: $radius-lg;
-  margin-bottom: $space-8;
+  flex-wrap: wrap;
 }
 
 .avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: $radius-full;
-  background: $bg-surface-300;
-  color: $text-default;
-  font-size: $font-size-xl;
-  font-weight: $font-weight-semibold;
   @include flex-center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid $border-strong;
+  font-family: $font-mono;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
   flex-shrink: 0;
 }
 
-.userInfo {
+.userMeta {
   @include flex-column;
-  gap: $space-1;
-  min-width: 0;
+  gap: 2px;
 }
 
-.userName {
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
-  color: $text-default;
-  @include truncate;
-}
-
-.userEmail {
-  font-size: $font-size-sm;
-  color: $text-light;
-  @include truncate;
-}
-
-.userRole {
-  display: inline-flex;
-  align-self: flex-start;
-  padding: $space-0-5 $space-2;
-  background: $bg-surface-200;
-  border-radius: $radius-full;
-  font-size: $font-size-xs;
-  color: $text-lighter;
+.metaLabel {
+  font-family: $font-mono;
+  font-size: $font-size-3xs;
   text-transform: uppercase;
-  letter-spacing: $tracking-wide;
+  letter-spacing: $tracking-widest;
+  color: $text-muted;
+}
+
+.metaValue {
+  font-size: $font-size-sm;
+  color: $text-default;
 }
 
 .section {
-  margin-bottom: $space-8;
+  @include flex-column;
+  gap: $space-4;
 }
 
-.sectionTitle {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $text-light;
+.sectionLabel {
+  display: block;
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
   text-transform: uppercase;
-  letter-spacing: $tracking-wide;
-  margin-bottom: $space-4;
+  letter-spacing: $tracking-widest;
+  color: $accent-default;
+  padding-bottom: $space-3;
+  border-bottom: 1px solid $border-default;
 }
 
 .grid {
   display: grid;
-  gap: $space-4;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: $border-default;
+  border: 1px solid $border-default;
 
-  @include breakpoint-up('md') {
+  @include breakpoint-up('sm') {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @include breakpoint-up('lg') {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 .card {
-  padding: $space-4;
-  background: $bg-surface-100;
-  border: 1px solid $border-default;
-  border-radius: $radius-lg;
+  background: $bg-default;
+  padding: $space-4 $space-5;
+  @include flex-column;
+  gap: $space-2;
 }
 
 .hookName {
-  display: inline-block;
+  font-family: $font-mono;
   font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
   color: $text-default;
-  background: $bg-surface-200;
-  padding: $space-1 $space-2;
-  border-radius: $radius-sm;
-  margin-bottom: $space-2;
+  font-weight: $font-weight-medium;
 }
 
 .description {
   font-size: $font-size-sm;
-  color: $text-light;
-  margin-bottom: $space-2;
+  color: $text-lighter;
   line-height: $line-height-relaxed;
 }
 
 .file {
-  font-size: $font-size-xs;
-  color: $text-muted;
   font-family: $font-mono;
+  font-size: $font-size-3xs;
+  color: $text-muted;
 }
 
-.list {
+.featureList {
+  list-style: none;
   @include flex-column;
   gap: $space-2;
-  padding-left: $space-5;
-  list-style: disc;
+  padding: $space-4;
+  border: 1px solid $border-default;
 
   li {
     font-size: $font-size-sm;
     color: $text-light;
+    padding-left: $space-4;
+    position: relative;
+
+    &::before {
+      content: '\2014';
+      position: absolute;
+      left: 0;
+      color: $text-muted;
+    }
   }
 }

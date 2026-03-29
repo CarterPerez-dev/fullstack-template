@@ -63,7 +63,7 @@ export function Shell(): React.ReactElement {
         className={`${styles.sidebar} ${sidebarOpen ? styles.open : ''} ${sidebarCollapsed ? styles.collapsed : ''}`}
       >
         <div className={styles.sidebarHeader}>
-          <span className={styles.logo}>NavBar Template</span>
+          <span className={styles.logo}>FST</span>
           <button
             type="button"
             className={styles.collapseBtn}

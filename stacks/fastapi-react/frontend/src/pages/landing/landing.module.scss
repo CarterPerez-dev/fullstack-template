@@ -1,161 +1,223 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // landing.module.scss
 // ===================
 
-@use '@/styles' as *;
+@use '../../styles' as *;
 
 .page {
   min-height: 100vh;
   min-height: 100dvh;
-  @include flex-column-center;
-  background-color: $bg-default;
-  background-image: radial-gradient(
-    circle,
-    $bg-landing 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
-  padding: $space-8;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: $space-5;
-}
-
-.title {
-  font-size: $font-size-4xl;
-  font-weight: $font-weight-semibold;
+  background: $bg-default;
   color: $text-default;
-  letter-spacing: $tracking-tight;
-  margin-bottom: $space-2;
+  @include flex-column;
 }
 
-.subtitle {
-  font-size: $font-size-lg;
-  color: $text-light;
-  margin-bottom: $space-3;
-}
-
-.github {
-  display: inline-flex;
-  color: $text-muted;
-  font-size: $font-size-2xl;
-  @include transition-fast;
-
-  @include hover {
-    &:hover {
-      color: $text-default;
-    }
-  }
-}
-
-.content {
-  max-width: 800px;
-  text-align: center;
-}
-
-.description {
-  font-size: $font-size-base;
-  color: $text-light;
-  line-height: $line-height-relaxed;
-  margin-bottom: $space-8;
-}
-
-.sections {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: $space-6;
-  margin-bottom: $space-10;
-  text-align: left;
-
-  @include breakpoint-down(md) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.section {
-  padding: $space-5;
-  background-color: $bg-surface-75;
-  border: 1px solid $border-muted;
-  border-radius: $radius-lg;
-}
-
-.sectionTitle {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: $text-default;
-  margin-bottom: $space-3;
-  letter-spacing: $tracking-wide;
+.topBar {
+  @include flex-between;
+  padding: $space-4 $space-6;
+  border-bottom: 1px solid $border-default;
+  font-family: $font-mono;
+  font-size: $font-size-3xs;
   text-transform: uppercase;
+  letter-spacing: $tracking-widest;
+  color: $text-lighter;
+
+  @include breakpoint-up('md') {
+    padding: $space-4 $space-8;
+    font-size: $font-size-2xs;
+  }
 }
 
-.features {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.topLeft {
   display: flex;
-  flex-direction: column;
-  gap: $space-2;
+  align-items: center;
+  gap: $space-4;
+}
 
-  li {
-    font-size: $font-size-sm;
-    color: $text-muted;
+.mark {
+  color: $text-default;
+  font-weight: $font-weight-bold;
+}
 
-    &::before {
-      content: '→';
-      margin-right: $space-2;
-      color: $text-lighter;
-    }
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: $space-6;
+}
+
+.status {
+  color: $accent-default;
+}
+
+.hero {
+  padding: $space-16 $space-6 $space-10;
+
+  @include breakpoint-up('md') {
+    padding: $space-20 $space-8 $space-12;
   }
+
+  @include breakpoint-up('lg') {
+    padding: $space-28 $space-8 $space-16;
+  }
+}
+
+.heroTitle {
+  font-weight: $font-weight-black;
+  font-size: clamp(#{$font-size-5xl}, 10vw, #{$font-size-9xl});
+  line-height: 0.92;
+  letter-spacing: $tracking-tighter;
+}
+
+.heroSub {
+  margin-top: $space-6;
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wide;
+  color: $text-lighter;
+  max-width: 48ch;
+  line-height: $line-height-relaxed;
+
+  @include breakpoint-up('md') {
+    margin-top: $space-8;
+  }
+}
+
+.pattern {
+  height: 36px;
+  margin: 0 $space-6;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    $border-default 4px,
+    $border-default 5px
+  );
+
+  @include breakpoint-up('md') {
+    margin: 0 $space-8;
+    height: 48px;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: $border-default;
+  margin: $space-6;
+  border: 1px solid $border-default;
+
+  @include breakpoint-up('md') {
+    grid-template-columns: 1fr 1fr;
+    margin: $space-8;
+  }
+}
+
+.cell {
+  background: $bg-default;
+  padding: $space-5 $space-6;
+}
+
+.cellLabel {
+  display: block;
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-widest;
+  color: $accent-default;
+  margin-bottom: $space-4;
+}
+
+.list {
+  list-style: none;
+  @include flex-column;
+  gap: $space-2;
+  font-size: $font-size-sm;
+  color: $text-light;
+  line-height: $line-height-normal;
 }
 
 .actions {
   display: flex;
   gap: $space-3;
-  justify-content: center;
-  flex-wrap: wrap;
-}
+  padding: $space-6;
+  padding-top: $space-4;
 
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: $space-3 $space-5;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $bg-default;
-  background-color: $text-default;
-  border-radius: $radius-md;
-  text-decoration: none;
-  @include transition-fast;
-
-  @include hover {
-    &:hover {
-      filter: brightness(0.9);
-    }
+  @include breakpoint-up('md') {
+    padding: $space-8;
+    padding-top: $space-6;
   }
 }
 
-.buttonOutline {
+.primaryBtn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: $space-3 $space-5;
-  font-size: $font-size-sm;
+  padding: $space-3 $space-6;
+  background: $accent-default;
+  color: $bg-default;
+  font-family: $font-mono;
+  font-size: $font-size-xs;
   font-weight: $font-weight-medium;
-  color: $text-default;
-  background-color: transparent;
-  border: 1px solid $border-default;
-  border-radius: $radius-md;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wider;
   text-decoration: none;
+  border: 1px solid $accent-default;
   @include transition-fast;
 
   @include hover {
-    &:hover {
-      border-color: $border-strong;
-      background-color: $bg-surface-75;
-    }
+    background: $accent-hover;
+    border-color: $accent-hover;
+  }
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: $space-3 $space-6;
+  background: transparent;
+  color: $text-default;
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wider;
+  text-decoration: none;
+  border: 1px solid $border-strong;
+  @include transition-fast;
+
+  @include hover {
+    border-color: $text-default;
+  }
+}
+
+.footer {
+  margin-top: auto;
+  padding: $space-4 $space-6;
+  border-top: 1px solid $border-default;
+  @include flex-between;
+  font-family: $font-mono;
+  font-size: $font-size-3xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wider;
+  color: $text-muted;
+
+  @include breakpoint-up('md') {
+    padding: $space-4 $space-8;
+  }
+}
+
+.github {
+  color: $text-lighter;
+  @include transition-fast;
+  display: flex;
+
+  @include hover {
+    color: $text-default;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
   }
 }

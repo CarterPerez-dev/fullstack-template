@@ -71,7 +71,10 @@ export function Component(): React.ReactElement {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Users</h1>
+        <div className={styles.headerLeft}>
+          <span className={styles.headerTag}>Command Center</span>
+          <h1 className={styles.title}>Users</h1>
+        </div>
         <button
           type="button"
           className={styles.createBtn}
