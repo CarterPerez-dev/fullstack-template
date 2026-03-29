@@ -1,149 +1,153 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // login.module.scss
 // ===================
 
-@use '@/styles' as *;
+@use '../../styles' as *;
 
 .page {
   min-height: 100vh;
   min-height: 100dvh;
-  @include flex-center;
-  background-color: $bg-default;
-  background-image: radial-gradient(
-    circle,
-    $bg-page 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
-  padding: $space-4;
+  background: $bg-default;
+  color: $text-default;
+  @include flex-column-center;
+  padding: $space-6;
 }
 
 .card {
   width: 100%;
-  max-width: 400px;
-  background-color: $black;
-  background-image: radial-gradient(
-    circle,
-    $bg-card 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
-  border: 1px solid $border-default;
-  border-radius: $radius-lg;
-  padding: $space-8;
+  max-width: 380px;
+  border-top: 3px solid $accent-default;
+  background: $bg-alternative;
+  border-left: 1px solid $border-default;
+  border-right: 1px solid $border-default;
+  border-bottom: 1px solid $border-default;
 }
 
 .header {
-  margin-bottom: $space-6;
+  padding: $space-8 $space-6 $space-4;
 }
 
-.title {
-  font-size: $font-size-2xl;
-  font-weight: $font-weight-semibold;
-  color: $white;
-  margin-bottom: $space-2;
+.backLink {
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wide;
+  color: $text-lighter;
+  text-decoration: none;
+  @include transition-fast;
+  display: inline-block;
+  margin-bottom: $space-4;
+
+  @include hover {
+    color: $accent-default;
+  }
 }
 
 .subtitle {
-  font-size: $font-size-sm;
-  color: $text-light;
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-widest;
+  color: $text-lighter;
+  display: block;
+}
+
+.title {
+  font-weight: $font-weight-black;
+  font-size: $font-size-4xl;
+  line-height: $line-height-none;
+  letter-spacing: $tracking-tight;
+  margin-top: $space-3;
 }
 
 .form {
   @include flex-column;
   gap: $space-5;
+  padding: $space-2 $space-6 $space-6;
 }
 
 .field {
   @include flex-column;
-  gap: $space-2;
+  gap: $space-1-5;
 }
 
 .label {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $white;
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-widest;
+  color: $text-lighter;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .input {
   width: 100%;
-  height: 48px;
-  padding: 0 $space-4;
-  background-color: transparent;
-  border: 1px solid $border-default;
-  border-radius: $radius-md;
-  font-size: $font-size-base;
-  color: $white;
+  padding: $space-2-5 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid $border-strong;
+  color: $text-default;
+  font-size: $font-size-sm;
+  outline: none;
   @include transition-fast;
+  border-radius: 0;
 
   &::placeholder {
     color: $text-muted;
   }
 
   &:focus {
-    outline: none;
-    border-color: $border-strong;
-  }
-
-  &[aria-invalid='true'] {
-    border-color: $error-default;
+    border-bottom-color: $accent-default;
   }
 }
 
-.inputWrapper {
-  position: relative;
-  width: 100%;
+.inputWrapper .input {
+  padding-right: $space-10;
 }
 
 .eyeButton {
   position: absolute;
-  right: $space-3;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
+  color: $text-lighter;
+  @include transition-fast;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: $text-muted;
-  cursor: pointer;
-  padding: $space-1;
-  @include transition-fast;
 
-  &:hover {
-    color: $white;
+  @include hover {
+    color: $text-default;
   }
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
   }
-}
-
-.error {
-  font-size: $font-size-xs;
-  color: $error-default;
 }
 
 .submit {
   width: 100%;
-  height: 48px;
+  padding: $space-3 $space-4;
   margin-top: $space-2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: $white;
-  border: none;
-  border-radius: $radius-md;
-  font-size: $font-size-base;
+  background: $accent-default;
+  color: $bg-default;
+  font-family: $font-mono;
+  font-size: $font-size-xs;
   font-weight: $font-weight-medium;
-  color: $black;
-  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wider;
+  border: 1px solid $accent-default;
   @include transition-fast;
 
   @include hover {
-    filter: brightness(0.9);
+    background: $accent-hover;
+    border-color: $accent-hover;
   }
 
   &:disabled {
@@ -153,19 +157,22 @@
 }
 
 .footer {
-  margin-top: $space-6;
+  padding: $space-4 $space-6;
+  border-top: 1px solid $border-muted;
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wide;
+  color: $text-lighter;
   text-align: center;
-  font-size: $font-size-sm;
-  color: $text-light;
 }
 
 .link {
-  color: $text-default;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  color: $accent-default;
+  text-decoration: none;
   @include transition-fast;
 
   @include hover {
-    color: $text-light;
+    color: $accent-hover;
   }
 }

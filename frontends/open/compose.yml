@@ -1,0 +1,36 @@
+# =============================================================================
+# AngelaMos | 2026
+# compose.yml
+# =============================================================================
+# Production compose - Nginx serving built React app
+# For Cloudflare tunnel: docker compose -f compose.yml -f cloudflared.compose.yml up
+# =============================================================================
+
+name: ${APP_NAME:-no-auth-template}
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: infra/docker/vite.prod
+      args:
+        - VITE_API_URL=${VITE_API_URL:-/api}
+        - VITE_APP_TITLE=${VITE_APP_TITLE:-My App}
+    container_name: ${APP_NAME:-no-auth-template}-nginx
+    ports:
+      - "${NGINX_HOST_PORT:-22784}:80"
+    networks:
+      - app
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
+    restart: unless-stopped
+
+networks:
+  app:
+    driver: bridge

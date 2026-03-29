@@ -38,10 +38,10 @@ export function Component(): React.ReactElement {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.header}>
+          <span className={styles.tag}>System Configuration</span>
           <h1 className={styles.title}>Settings</h1>
           <p className={styles.subtitle}>
-            Template page — available hooks and stores for building your settings
-            UI
+            Available hooks and stores for building your settings UI
           </p>
         </div>
 

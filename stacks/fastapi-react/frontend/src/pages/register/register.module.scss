@@ -1,53 +1,116 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // register.module.scss
 // ===================
 
-@use '@/styles' as *;
+@use '../../styles' as *;
 
 .page {
   min-height: 100vh;
   min-height: 100dvh;
-  @include flex-center;
-  background-color: $bg-default;
-  background-image: radial-gradient(
-    circle,
-    $bg-page 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
-  padding: $space-4;
+  background: $bg-default;
+  color: $text-default;
+  @include flex-column;
+
+  @include breakpoint-up('md') {
+    flex-direction: row;
+  }
 }
 
-.card {
-  width: 100%;
-  max-width: 400px;
-  background-color: $black;
-  background-image: radial-gradient(
-    circle,
-    $bg-card 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
-  border: 1px solid $border-default;
-  border-radius: $radius-lg;
-  padding: $space-8;
+.panel {
+  padding: $space-10 $space-6;
+  @include flex-column;
+  justify-content: center;
+
+  @include breakpoint-up('md') {
+    flex: 1;
+    padding: $space-12 $space-8;
+  }
+
+  @include breakpoint-up('lg') {
+    padding: $space-16 $space-12;
+  }
 }
 
-.header {
-  margin-bottom: $space-6;
+.backLink {
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wide;
+  color: $text-lighter;
+  text-decoration: none;
+  @include transition-fast;
+  display: inline-block;
+  margin-bottom: $space-4;
+
+  @include hover {
+    color: $accent-default;
+  }
 }
 
 .title {
-  font-size: $font-size-2xl;
-  font-weight: $font-weight-semibold;
-  color: $white;
-  margin-bottom: $space-2;
+  font-weight: $font-weight-black;
+  font-size: clamp(#{$font-size-4xl}, 6vw, #{$font-size-7xl});
+  line-height: 0.92;
+  letter-spacing: $tracking-tighter;
 }
 
-.subtitle {
-  font-size: $font-size-sm;
-  color: $text-light;
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-4;
+  margin-top: $space-6;
+}
+
+.metaItem {
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-widest;
+  color: $text-lighter;
+}
+
+.pattern {
+  height: 40px;
+  margin-top: $space-10;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    $border-default 4px,
+    $border-default 5px
+  );
+
+  @include breakpoint-down('md') {
+    display: none;
+  }
+}
+
+.formPanel {
+  @include flex-column-center;
+  padding: $space-6;
+
+  @include breakpoint-up('md') {
+    flex: 1;
+    background: $bg-alternative;
+    border-left: 1px solid $border-default;
+    padding: $space-12 $space-8;
+  }
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 380px;
+}
+
+.formLabel {
+  display: block;
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-widest;
+  color: $accent-default;
+  margin-bottom: $space-6;
 }
 
 .form {
@@ -57,43 +120,45 @@
 
 .field {
   @include flex-column;
-  gap: $space-2;
+  gap: $space-1-5;
 }
 
 .label {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $white;
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-widest;
+  color: $text-lighter;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .input {
   width: 100%;
-  height: 48px;
-  padding: 0 $space-4;
-  background-color: transparent;
-  border: 1px solid $border-default;
-  border-radius: $radius-md;
-  font-size: $font-size-base;
-  color: $white;
+  padding: $space-2-5 $space-3;
+  background: transparent;
+  border: 1px solid $border-strong;
+  color: $text-default;
+  font-size: $font-size-sm;
+  outline: none;
   @include transition-fast;
+  border-radius: 0;
 
   &::placeholder {
     color: $text-muted;
   }
 
   &:focus {
-    outline: none;
-    border-color: $border-strong;
-  }
-
-  &[aria-invalid='true'] {
-    border-color: $error-default;
+    border-color: $accent-default;
   }
 }
 
-.inputWrapper {
-  position: relative;
-  width: 100%;
+.inputWrapper .input {
+  padding-right: $space-10;
 }
 
 .eyeButton {
@@ -101,49 +166,38 @@
   right: $space-3;
   top: 50%;
   transform: translateY(-50%);
+  color: $text-lighter;
+  @include transition-fast;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: $text-muted;
-  cursor: pointer;
-  padding: $space-1;
-  @include transition-fast;
 
-  &:hover {
-    color: $white;
+  @include hover {
+    color: $text-default;
   }
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
   }
-}
-
-.error {
-  font-size: $font-size-xs;
-  color: $error-default;
 }
 
 .submit {
   width: 100%;
-  height: 48px;
+  padding: $space-3 $space-4;
   margin-top: $space-2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: $white;
-  border: none;
-  border-radius: $radius-md;
-  font-size: $font-size-base;
+  background: $accent-default;
+  color: $bg-default;
+  font-family: $font-mono;
+  font-size: $font-size-xs;
   font-weight: $font-weight-medium;
-  color: $black;
-  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wider;
+  border: 1px solid $accent-default;
   @include transition-fast;
 
   @include hover {
-    filter: brightness(0.9);
+    background: $accent-hover;
+    border-color: $accent-hover;
   }
 
   &:disabled {
@@ -154,18 +208,20 @@
 
 .footer {
   margin-top: $space-6;
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-wide;
+  color: $text-lighter;
   text-align: center;
-  font-size: $font-size-sm;
-  color: $text-light;
 }
 
 .link {
-  color: $text-default;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  color: $accent-default;
+  text-decoration: none;
   @include transition-fast;
 
   @include hover {
-    color: $text-light;
+    color: $accent-hover;
   }
 }

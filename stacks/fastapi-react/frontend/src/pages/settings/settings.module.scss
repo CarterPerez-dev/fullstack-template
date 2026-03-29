@@ -1,109 +1,139 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // settings.module.scss
 // ===================
 
-@use '@/styles' as *;
+@use '../../styles' as *;
 
 .page {
-  min-height: calc(100vh - 56px);
-  padding: $space-6;
-  background-color: $bg-default;
+  @include flex-column;
 }
 
 .container {
-  max-width: 800px;
-  margin: 0 auto;
+  @include flex-column;
+  gap: $space-10;
 }
 
 .header {
-  margin-bottom: $space-8;
+  @include flex-column;
+  gap: $space-2;
+}
+
+.tag {
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
+  text-transform: uppercase;
+  letter-spacing: $tracking-widest;
+  color: $accent-default;
 }
 
 .title {
-  font-size: $font-size-2xl;
-  font-weight: $font-weight-semibold;
-  color: $text-default;
-  margin-bottom: $space-2;
+  font-weight: $font-weight-black;
+  font-size: $font-size-3xl;
+  letter-spacing: $tracking-tight;
+  line-height: $line-height-tight;
+
+  @include breakpoint-up('md') {
+    font-size: $font-size-4xl;
+  }
 }
 
 .subtitle {
   font-size: $font-size-sm;
   color: $text-lighter;
+  max-width: 50ch;
 }
 
 .section {
-  margin-bottom: $space-8;
+  @include flex-column;
+  gap: $space-5;
+  padding-top: $space-6;
+  border-top: 1px solid $border-default;
 }
 
 .sectionTitle {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $text-light;
+  font-family: $font-mono;
+  font-size: $font-size-2xs;
   text-transform: uppercase;
-  letter-spacing: $tracking-wide;
-  margin-bottom: $space-4;
+  letter-spacing: $tracking-widest;
+  color: $text-lighter;
+  font-weight: $font-weight-medium;
 }
 
 .grid {
   display: grid;
+  grid-template-columns: 1fr;
   gap: $space-4;
 
   @include breakpoint-up('md') {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
   }
 }
 
 .card {
-  padding: $space-4;
-  background: $bg-surface-100;
+  padding: $space-4 $space-5;
   border: 1px solid $border-default;
-  border-radius: $radius-lg;
+  @include flex-column;
+  gap: $space-2;
 }
 
 .hookName {
-  display: inline-block;
+  font-family: $font-mono;
   font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
   color: $text-default;
-  background: $bg-surface-200;
-  padding: $space-1 $space-2;
-  border-radius: $radius-sm;
-  margin-bottom: $space-2;
+  font-weight: $font-weight-medium;
 }
 
 .description {
   font-size: $font-size-sm;
-  color: $text-light;
-  margin-bottom: $space-3;
+  color: $text-lighter;
   line-height: $line-height-relaxed;
 }
 
 .meta {
-  @include flex-column;
-  gap: $space-1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  margin-top: $space-1;
 }
 
 .file {
-  font-size: $font-size-xs;
-  color: $text-lighter;
   font-family: $font-mono;
+  font-size: $font-size-3xs;
+  color: $text-muted;
 }
 
 .endpoint {
-  font-size: $font-size-xs;
-  color: $text-muted;
   font-family: $font-mono;
+  font-size: $font-size-3xs;
+  color: $accent-muted;
 }
 
 .list {
+  list-style: none;
   @include flex-column;
-  gap: $space-2;
-  padding-left: $space-5;
-  list-style: disc;
+  gap: $space-3;
 
   li {
     font-size: $font-size-sm;
     color: $text-light;
+    padding-left: $space-5;
+    position: relative;
+    padding-bottom: $space-3;
+    border-bottom: 1px solid $border-muted;
+
+    &::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      font-family: $font-mono;
+      color: $accent-default;
+      font-size: $font-size-xs;
+    }
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
   }
 }

@@ -1,10 +1,7 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // _reset.scss
 // ===================
-
-@use 'tokens' as *;
-@use 'fonts' as *;
 
 *,
 *::before,
@@ -36,14 +33,13 @@ html {
 body {
   min-height: 100vh;
   min-height: 100dvh;
-  line-height: $line-height-normal;
+  line-height: 1.5;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  background-color: $bg-default;
-  color: $text-default;
-  font-family: $font-sans;
+  background-color: hsl(0, 0%, 7.1%);
+  color: hsl(0, 0%, 98%);
 }
 
 h1,
@@ -52,25 +48,14 @@ h3,
 h4,
 h5,
 h6 {
-  line-height: $line-height-tight;
+  line-height: 1.2;
   text-wrap: balance;
   overflow-wrap: break-word;
-  font-weight: $font-weight-semibold;
 }
 
 p {
   text-wrap: pretty;
   overflow-wrap: break-word;
-}
-
-ul,
-ol {
-  list-style: none;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
 }
 
 img,
@@ -91,51 +76,12 @@ select {
   color: inherit;
 }
 
-input[type='text'],
-input[type='email'],
-input[type='password'],
-input[type='search'],
-input[type='number'],
-input[type='tel'],
-input[type='url'],
-textarea,
-select {
-  font-size: $font-size-sm;
-  appearance: none;
-}
-
 button {
   background: none;
   border: none;
   cursor: pointer;
   text-align: inherit;
   font-family: inherit;
-}
-
-fieldset {
-  border: none;
-}
-
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-
-textarea:not([rows]) {
-  min-height: 10em;
-}
-
-:target {
-  scroll-margin-block: 5ex;
-}
-
-:focus-visible {
-  outline: 2px solid $border-strong;
-  outline-offset: 2px;
-}
-
-:focus:not(:focus-visible) {
-  outline: none;
 }
 
 [hidden] {
@@ -147,16 +93,6 @@ textarea:not([rows]) {
   opacity: 0.5;
 }
 
-dialog {
-  padding: 0;
-  border: none;
-  background: transparent;
-}
-
-summary {
-  cursor: pointer;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -166,33 +102,4 @@ summary {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-@supports (padding: max(0px)) {
-  body {
-    padding-left: max(0px, env(safe-area-inset-left));
-    padding-right: max(0px, env(safe-area-inset-right));
-  }
-}
-
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: $border-default;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: $border-strong;
-}
-
-::selection {
-  background-color: $bg-selection;
 }

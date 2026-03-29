@@ -1,5 +1,5 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // styles.scss
 // ===================
 
@@ -8,22 +8,21 @@
 @forward 'styles/mixins';
 
 @use 'styles/reset';
-@use 'styles/tokens' as *;
-@use 'styles/fonts' as *;
+@use 'styles/fonts' as f;
+
+body {
+  font-family: f.$font-sans;
+}
 
 #root {
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: $bg-default;
 }
 
 .app {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: $bg-default;
-  color: $text-default;
-  font-family: $font-sans;
 }

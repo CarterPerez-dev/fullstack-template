@@ -1,5 +1,5 @@
 /**
- * ©AngelaMos | 2025
+ * ©AngelaMos | 2026
  * index.tsx
  */
 
@@ -40,6 +40,10 @@ export function Component(): React.ReactElement {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.header}>
+          <div className={styles.headerMeta}>
+            <span className={styles.tag}>Operations Overview</span>
+            <span className={styles.tag}>Status: Online</span>
+          </div>
           <h1 className={styles.title}>
             Welcome{user?.full_name ? `, ${user.full_name}` : ''}
           </h1>
@@ -48,21 +52,30 @@ export function Component(): React.ReactElement {
           </p>
         </div>
 
-        <div className={styles.userCard}>
+        <div className={styles.userBar}>
           <div className={styles.avatar}>
             {user?.full_name?.[0]?.toUpperCase() ??
               user?.email?.[0]?.toUpperCase() ??
               'U'}
           </div>
-          <div className={styles.userInfo}>
-            <span className={styles.userName}>{user?.full_name ?? 'User'}</span>
-            <span className={styles.userEmail}>{user?.email}</span>
-            <span className={styles.userRole}>{user?.role}</span>
+          <div className={styles.userMeta}>
+            <span className={styles.metaLabel}>Email</span>
+            <span className={styles.metaValue}>{user?.email}</span>
+          </div>
+          <div className={styles.userMeta}>
+            <span className={styles.metaLabel}>Role</span>
+            <span className={styles.metaValue}>{user?.role}</span>
+          </div>
+          <div className={styles.userMeta}>
+            <span className={styles.metaLabel}>Name</span>
+            <span className={styles.metaValue}>
+              {user?.full_name ?? '\u2014'}
+            </span>
           </div>
         </div>
 
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Available Stores</h2>
+          <span className={styles.sectionLabel}>Available Stores</span>
           <div className={styles.grid}>
             {AVAILABLE_STORES.map((store) => (
               <div key={store.name} className={styles.card}>
@@ -75,8 +88,8 @@ export function Component(): React.ReactElement {
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Suggested Features</h2>
-          <ul className={styles.list}>
+          <span className={styles.sectionLabel}>Suggested Features</span>
+          <ul className={styles.featureList}>
             {SUGGESTED_FEATURES.map((feature) => (
               <li key={feature}>{feature}</li>
             ))}
