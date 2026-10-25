@@ -1,5 +1,6 @@
 {
   "name": "YOUR_APP_SLUG",
+  "packageManager": "pnpm@10.29.1",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
