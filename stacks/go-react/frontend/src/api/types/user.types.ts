@@ -117,8 +117,7 @@ export const USER_SUCCESS_MESSAGES = {
   UPDATED: 'User updated successfully',
   DELETED: 'User deleted successfully',
   PROFILE_UPDATED: 'Profile updated successfully',
-  REGISTERED:
-    'Registration successful! Please check your email to verify your account.',
+  REGISTERED: 'Account created. You can now sign in.',
 } as const
 
 export type UserErrorMessage =

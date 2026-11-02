@@ -1,0 +1,43 @@
+"""
+ⒸAngelaMos | 2025
+constants.py
+"""
+
+EMAIL_MAX_LENGTH = 320
+PASSWORD_MIN_LENGTH = 8
+PASSWORD_MAX_LENGTH = 128
+PASSWORD_HASH_MAX_LENGTH = 1024
+FULL_NAME_MAX_LENGTH = 255
+
+TOKEN_HASH_LENGTH = 64
+DEVICE_ID_MAX_LENGTH = 255
+DEVICE_NAME_MAX_LENGTH = 100
+IP_ADDRESS_MAX_LENGTH = 45
+
+API_VERSION = "v1"
+API_PREFIX = f"/{API_VERSION}"
+
+PORTFOLIO_SHORT_TEXT = 255
+PORTFOLIO_MEDIUM_TEXT = 1024
+PORTFOLIO_LONG_TEXT = 16384
+PORTFOLIO_TINY_TEXT = 64
+PORTFOLIO_META_TEXT = 128
+URL_MAX_LENGTH = 2048
+COLOR_MAX_LENGTH = 32
+FONT_MAX_LENGTH = 128
+MEDIA_FILENAME_MAX_LENGTH = 512
+MEDIA_CONTENT_TYPE_MAX_LENGTH = 128
+
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+ALLOWED_UPLOAD_CONTENT_TYPES = frozenset(
+    {
+        "image/png",
+        "image/jpeg",
+        "image/gif",
+        "image/webp",
+        "image/svg+xml",
+        "image/x-icon",
+        "image/vnd.microsoft.icon",
+        "application/pdf",
+    }
+)

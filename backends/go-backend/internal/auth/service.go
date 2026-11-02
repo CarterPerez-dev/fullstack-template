@@ -13,6 +13,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/carterperez-dev/templates/go-backend/internal/core"
+	"github.com/carterperez-dev/templates/go-backend/internal/middleware"
 )
 
 var (
@@ -29,6 +30,7 @@ type UserInfo struct {
 	Role         string
 	Tier         string
 	TokenVersion int
+	CreatedAt    time.Time
 }
 
 type UserProvider interface {
@@ -39,7 +41,8 @@ type UserProvider interface {
 		email, passwordHash, name string,
 	) (*UserInfo, error)
 	IncrementTokenVersion(ctx context.Context, userID string) error
-	UpdatePassword(ctx context.Context, userID, passwordHash string) error
+	UpdatePassword(ctx context.Context, userID, previousHash, passwordHash string) error
+	RehashPassword(ctx context.Context, userID, previousHash, passwordHash string) error
 }
 
 type Service struct {
@@ -73,8 +76,9 @@ func (s *Service) Login(
 	user, err := s.userProvider.GetByEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, core.ErrNotFound) {
-			//nolint:errcheck // timing attack prevention - always verify to prevent enumeration
-			_, _, _ = core.VerifyPasswordTimingSafe(req.Password, nil)
+			if _, _, verifyErr := core.VerifyPasswordTimingSafe(req.Password, nil); verifyErr != nil {
+				return nil, fmt.Errorf("verify password: %w", verifyErr)
+			}
 			return nil, ErrInvalidCredentials
 		}
 		return nil, fmt.Errorf("get user: %w", err)
@@ -93,8 +97,9 @@ func (s *Service) Login(
 	}
 
 	if newHash != "" {
-		//nolint:errcheck // best-effort rehash upgrade
-		_ = s.userProvider.UpdatePassword(ctx, user.ID, newHash)
+		if err := s.userProvider.RehashPassword(ctx, user.ID, user.PasswordHash, newHash); err != nil {
+			return nil, fmt.Errorf("rehash password: %w", err)
+		}
 	}
 
 	return s.createAuthResponse(ctx, user, userAgent, ipAddress, "", nil)
@@ -136,8 +141,9 @@ func (s *Service) Refresh(
 	}
 
 	if storedToken.IsUsed {
-		//nolint:errcheck // security revocation continues regardless
-		_ = s.repo.RevokeByFamilyID(ctx, storedToken.FamilyID)
+		if err := s.repo.RevokeByFamilyID(ctx, storedToken.FamilyID); err != nil {
+			return nil, fmt.Errorf("revoke reused token family: %w", err)
+		}
 		return nil, ErrTokenReuse
 	}
 
@@ -151,6 +157,9 @@ func (s *Service) Refresh(
 	user, err := s.userProvider.GetByID(ctx, storedToken.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
+	}
+	if storedToken.TokenVersion != user.TokenVersion {
+		return nil, core.ErrTokenRevoked
 	}
 
 	return s.createAuthResponse(
@@ -181,7 +190,7 @@ func (s *Service) Logout(
 		return fmt.Errorf("logout: %w", core.ErrForbidden)
 	}
 
-	if err := s.repo.RevokeByID(ctx, storedToken.ID); err != nil &&
+	if err := s.repo.RevokeByFamilyID(ctx, storedToken.FamilyID); err != nil &&
 		!errors.Is(err, core.ErrNotFound) {
 		return fmt.Errorf("revoke token: %w", err)
 	}
@@ -190,12 +199,11 @@ func (s *Service) Logout(
 }
 
 func (s *Service) LogoutAll(ctx context.Context, userID string) error {
-	if err := s.repo.RevokeAllForUser(ctx, userID); err != nil {
-		return fmt.Errorf("revoke all tokens: %w", err)
-	}
-
 	if err := s.userProvider.IncrementTokenVersion(ctx, userID); err != nil {
 		return fmt.Errorf("increment token version: %w", err)
+	}
+	if err := s.repo.RevokeAllForUser(ctx, userID); err != nil {
+		return fmt.Errorf("revoke all tokens: %w", err)
 	}
 
 	return nil
@@ -270,7 +278,7 @@ func (s *Service) RevokeSession(
 		return fmt.Errorf("revoke session: %w", core.ErrForbidden)
 	}
 
-	if err := s.repo.RevokeByID(ctx, sessionID); err != nil {
+	if err := s.repo.RevokeByFamilyID(ctx, token.FamilyID); err != nil {
 		return fmt.Errorf("revoke session: %w", err)
 	}
 
@@ -303,32 +311,36 @@ func (s *Service) ChangePassword(
 		return fmt.Errorf("hash password: %w", err)
 	}
 
-	if err := s.userProvider.UpdatePassword(ctx, userID, newHash); err != nil {
+	if err := s.userProvider.UpdatePassword(ctx, userID, user.PasswordHash, newHash); err != nil {
 		return fmt.Errorf("update password: %w", err)
-	}
-
-	if err := s.LogoutAll(ctx, userID); err != nil {
-		return fmt.Errorf("logout all: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Service) ValidateTokenVersion(
+func (s *Service) VerifyAccessToken(
 	ctx context.Context,
-	userID string,
-	tokenVersion int,
-) error {
-	user, err := s.userProvider.GetByID(ctx, userID)
+	token string,
+) (*middleware.AccessTokenClaims, error) {
+	claims, err := s.jwt.VerifyAccessToken(ctx, token)
 	if err != nil {
-		return fmt.Errorf("get user: %w", err)
+		return nil, err
+	}
+	user, err := s.userProvider.GetByID(ctx, claims.UserID)
+	if errors.Is(err, core.ErrNotFound) {
+		return nil, fmt.Errorf("verify token user: %w", core.ErrTokenInvalid)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("get token user: %w", err)
 	}
 
-	if tokenVersion < user.TokenVersion {
-		return fmt.Errorf("validate token version: %w", core.ErrTokenRevoked)
+	if claims.TokenVersion != user.TokenVersion {
+		return nil, fmt.Errorf("validate token version: %w", core.ErrTokenRevoked)
 	}
 
-	return nil
+	claims.Role = user.Role
+	claims.Tier = user.Tier
+	return claims, nil
 }
 
 func (s *Service) GetCurrentUser(
@@ -341,11 +353,12 @@ func (s *Service) GetCurrentUser(
 	}
 
 	return &UserResponse{
-		ID:    user.ID,
-		Email: user.Email,
-		Name:  user.Name,
-		Role:  user.Role,
-		Tier:  user.Tier,
+		ID:        user.ID,
+		Email:     user.Email,
+		Name:      user.Name,
+		Role:      user.Role,
+		Tier:      user.Tier,
+		CreatedAt: user.CreatedAt,
 	}, nil
 }
 
@@ -373,22 +386,27 @@ func (s *Service) createAuthResponse(
 	newTokenID := uuid.New().String()
 
 	refreshTokenEntity := &RefreshToken{
-		ID:        newTokenID,
-		UserID:    user.ID,
-		TokenHash: refreshData.Hash,
-		FamilyID:  refreshData.FamilyID,
-		ExpiresAt: refreshData.ExpiresAt,
-		UserAgent: userAgent,
-		IPAddress: ipAddress,
-	}
-
-	if err := s.repo.Create(ctx, refreshTokenEntity); err != nil {
-		return nil, fmt.Errorf("store refresh token: %w", err)
+		ID:           newTokenID,
+		UserID:       user.ID,
+		TokenHash:    refreshData.Hash,
+		FamilyID:     refreshData.FamilyID,
+		TokenVersion: user.TokenVersion,
+		ExpiresAt:    refreshData.ExpiresAt,
+		UserAgent:    userAgent,
+		IPAddress:    ipAddress,
 	}
 
 	if oldTokenID != nil {
-		//nolint:errcheck // best-effort token chain tracking
-		_ = s.repo.MarkAsUsed(ctx, *oldTokenID, newTokenID)
+		if err := s.repo.Rotate(ctx, *oldTokenID, refreshTokenEntity); err != nil {
+			if errors.Is(err, core.ErrTokenRevoked) {
+				if revokeErr := s.repo.RevokeByFamilyID(ctx, refreshTokenEntity.FamilyID); revokeErr != nil {
+					return nil, fmt.Errorf("revoke raced token family: %w", revokeErr)
+				}
+			}
+			return nil, fmt.Errorf("rotate refresh token: %w", err)
+		}
+	} else if err := s.repo.Create(ctx, refreshTokenEntity); err != nil {
+		return nil, fmt.Errorf("store refresh token: %w", err)
 	}
 
 	return &AuthResponse{
@@ -398,14 +416,14 @@ func (s *Service) createAuthResponse(
 			Name:      user.Name,
 			Role:      user.Role,
 			Tier:      user.Tier,
-			CreatedAt: time.Now(),
+			CreatedAt: user.CreatedAt,
 		},
 		Tokens: TokenResponse{
 			AccessToken:  accessToken,
 			RefreshToken: refreshData.Token,
 			TokenType:    "Bearer",
-			ExpiresIn:    int(15 * time.Minute / time.Second),
-			ExpiresAt:    time.Now().Add(15 * time.Minute),
+			ExpiresIn:    int(s.jwt.config.AccessTokenExpire / time.Second),
+			ExpiresAt:    time.Now().Add(s.jwt.config.AccessTokenExpire),
 		},
 	}, nil
 }

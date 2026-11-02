@@ -1,0 +1,69 @@
+// ===================
+// © AngelaMos | 2026
+// login.module.scss
+// ===================
+
+.page {
+  padding: clamp(1rem, 4vw, 3rem);
+}
+
+.card {
+  width: min(100%, 26rem);
+  margin: 3rem auto;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.title {
+  margin-top: 1.5rem;
+  font-size: 1.75rem;
+}
+
+.form,
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form {
+  gap: 1.25rem;
+}
+
+.inputWrapper {
+  position: relative;
+
+  .input {
+    padding-right: 3rem;
+  }
+}
+
+.input,
+.submit {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #888;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.eyeButton {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 3rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.submit:disabled {
+  opacity: 0.5;
+}
+
+.card :focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}

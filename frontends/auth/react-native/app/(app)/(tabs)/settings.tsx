@@ -3,17 +3,17 @@
  * settings.tsx
  */
 
+import { router } from 'expo-router'
+import { ChevronRight, LogOut, Shield, User } from 'lucide-react-native'
+import type React from 'react'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Stack, Switch, Text, YStack } from 'tamagui'
 import { useCurrentUser, useLogout } from '@/api/hooks'
 import { useBiometricsEnabled, useUIStore } from '@/core/lib'
 import { DottedBackground } from '@/shared/components'
 import { getBiometricLabel, useBiometrics } from '@/shared/hooks'
 import { haptics } from '@/shared/utils'
 import { colors } from '@/theme/tokens'
-import { router } from 'expo-router'
-import { ChevronRight, LogOut, Shield, User } from 'lucide-react-native'
-import type React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { Stack, Switch, Text, YStack } from 'tamagui'
 
 function SettingsRow({
   icon,
@@ -72,74 +72,75 @@ export default function SettingsScreen(): React.ReactElement {
     <DottedBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <YStack flex={1} padding="$6">
-        <Stack marginBottom="$6">
-          <Text
-            fontSize={26}
-            fontWeight="600"
-            color="$textDefault"
-            marginBottom="$2"
+          <Stack marginBottom="$6">
+            <Text
+              fontSize={26}
+              fontWeight="600"
+              color="$textDefault"
+              marginBottom="$2"
+            >
+              Settings
+            </Text>
+            <Text fontSize={14} color="$textLighter">
+              {user?.email}
+            </Text>
+          </Stack>
+
+          <Stack
+            backgroundColor="$bgSurface100"
+            borderWidth={1}
+            borderColor="$borderDefault"
+            borderRadius="$4"
+            overflow="hidden"
+            marginBottom="$6"
           >
-            Settings
-          </Text>
-          <Text fontSize={14} color="$textLighter">
-            {user?.email}
-          </Text>
-        </Stack>
-
-        <Stack
-          backgroundColor="$bgSurface100"
-          borderWidth={1}
-          borderColor="$borderDefault"
-          borderRadius="$4"
-          overflow="hidden"
-          marginBottom="$6"
-        >
-          <SettingsRow
-            icon={<User size={18} color={colors.textLight.val} />}
-            label="Profile"
-            onPress={() => router.push('/(app)/profile')}
-          />
-
-          {canUseBiometrics && (
             <SettingsRow
-              icon={<Shield size={18} color={colors.textLight.val} />}
-              label={`${getBiometricLabel(biometryType)} Lock`}
-              rightElement={
-                <Switch
-                  size="$4"
-                  checked={biometricsEnabled}
-                  onCheckedChange={handleBiometricsToggle}
-                  backgroundColor={biometricsEnabled ? colors.accent.val : colors.bgSurface200.val}
-                  borderWidth={1}
-                  borderColor={biometricsEnabled ? colors.accent.val : colors.borderDefault.val}
-                  width={52}
-                  height={28}
-                >
-                  <Switch.Thumb
-                    backgroundColor={colors.white.val}
-                    animation="quick"
-                    width={24}
-                    height={24}
-                  />
-                </Switch>
-              }
+              icon={<User size={18} color={colors.textLight.val} />}
+              label="Profile"
+              onPress={() => router.push('/(app)/profile')}
             />
-          )}
-        </Stack>
 
-        <Stack
-          backgroundColor="$bgSurface100"
-          borderWidth={1}
-          borderColor="$borderDefault"
-          borderRadius="$4"
-          overflow="hidden"
-        >
-          <SettingsRow
-            icon={<LogOut size={18} color={colors.errorDefault.val} />}
-            label="Logout"
-            onPress={handleLogout}
-          />
-        </Stack>
+            {canUseBiometrics && (
+              <SettingsRow
+                icon={<Shield size={18} color={colors.textLight.val} />}
+                label={`${getBiometricLabel(biometryType)} Lock`}
+                rightElement={
+                  <Switch
+                    size="$4"
+                    checked={biometricsEnabled}
+                    onCheckedChange={handleBiometricsToggle}
+                    backgroundColor={
+                      biometricsEnabled ? '$accent' : '$bgSurface200'
+                    }
+                    borderWidth={1}
+                    borderColor={biometricsEnabled ? '$accent' : '$borderDefault'}
+                    width={52}
+                    height={28}
+                  >
+                    <Switch.Thumb
+                      backgroundColor="$white"
+                      width={24}
+                      height={24}
+                    />
+                  </Switch>
+                }
+              />
+            )}
+          </Stack>
+
+          <Stack
+            backgroundColor="$bgSurface100"
+            borderWidth={1}
+            borderColor="$borderDefault"
+            borderRadius="$4"
+            overflow="hidden"
+          >
+            <SettingsRow
+              icon={<LogOut size={18} color={colors.errorDefault.val} />}
+              label="Logout"
+              onPress={handleLogout}
+            />
+          </Stack>
         </YStack>
       </SafeAreaView>
     </DottedBackground>

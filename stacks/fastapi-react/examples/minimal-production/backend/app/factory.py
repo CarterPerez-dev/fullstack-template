@@ -24,9 +24,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     Application lifespan handler for startup and shutdown
     """
-    sessionmanager.init(str(settings.DATABASE_URL))
-    yield
-    await sessionmanager.close()
+    try:
+        sessionmanager.init(str(settings.DATABASE_URL))
+        yield
+    finally:
+        await sessionmanager.close()
 
 
 OPENAPI_TAGS = [

@@ -3,10 +3,15 @@
  * Input.tsx
  */
 
-import { type Ref, forwardRef } from 'react'
+import { forwardRef, type Ref } from 'react'
 import type { TextInput as RNTextInput } from 'react-native'
-import { type GetProps, styled } from 'tamagui'
-import { Stack, Input as TamaguiInput, Text } from 'tamagui'
+import {
+  type GetProps,
+  Stack,
+  styled,
+  Input as TamaguiInput,
+  Text,
+} from 'tamagui'
 
 const InputFrame = styled(TamaguiInput, {
   name: 'Input',

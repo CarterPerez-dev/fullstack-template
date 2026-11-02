@@ -75,9 +75,16 @@ func (s *Service) IncrementTokenVersion(
 
 func (s *Service) UpdatePassword(
 	ctx context.Context,
-	userID, passwordHash string,
+	userID, previousHash, passwordHash string,
 ) error {
-	return s.repo.UpdatePassword(ctx, userID, passwordHash)
+	return s.repo.UpdatePassword(ctx, userID, previousHash, passwordHash)
+}
+
+func (s *Service) RehashPassword(
+	ctx context.Context,
+	userID, previousHash, passwordHash string,
+) error {
+	return s.repo.RehashPassword(ctx, userID, previousHash, passwordHash)
 }
 
 func (s *Service) GetUser(ctx context.Context, id string) (*User, error) {
@@ -89,20 +96,7 @@ func (s *Service) UpdateUser(
 	id string,
 	req UpdateUserRequest,
 ) (*User, error) {
-	user, err := s.repo.GetByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	if req.Name != nil {
-		user.Name = *req.Name
-	}
-
-	if err := s.repo.Update(ctx, user); err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return s.repo.UpdateName(ctx, id, req.Name)
 }
 
 func (s *Service) UpdateUserRole(
@@ -117,18 +111,7 @@ func (s *Service) UpdateUserRole(
 		)
 	}
 
-	user, err := s.repo.GetByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	user.Role = role
-
-	if err := s.repo.Update(ctx, user); err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return s.repo.UpdateRole(ctx, id, role)
 }
 
 func (s *Service) UpdateUserTier(
@@ -143,18 +126,7 @@ func (s *Service) UpdateUserTier(
 		)
 	}
 
-	user, err := s.repo.GetByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	user.Tier = tier
-
-	if err := s.repo.Update(ctx, user); err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return s.repo.UpdateTier(ctx, id, tier)
 }
 
 func (s *Service) DeleteUser(ctx context.Context, id string) error {
@@ -250,6 +222,7 @@ func toUserInfo(u *User) *auth.UserInfo {
 		Role:         u.Role,
 		Tier:         u.Tier,
 		TokenVersion: u.TokenVersion,
+		CreatedAt:    u.CreatedAt,
 	}
 }
 

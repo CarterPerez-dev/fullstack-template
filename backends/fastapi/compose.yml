@@ -6,16 +6,16 @@
 # For Cloudflare tunnel: docker compose -f compose.yml -f cloudflared.compose.yml up
 # =============================================================================
 
-name: ${APP_NAME:-fastapi-api}
+name: fastapi-api
 
 services:
   api:
     build:
       context: .
       dockerfile: infra/docker/fastapi.prod
-    container_name: ${APP_NAME:-fastapi-api}-backend
+    container_name: fastapi-api-backend
     ports:
-      - "${API_HOST_PORT:-8500}:8000"
+      - "${API_HOST_PORT:-48500}:8000"
     env_file:
       - .env
     environment:
@@ -47,11 +47,11 @@ services:
 
   db:
     image: postgres:18-alpine
-    container_name: ${APP_NAME:-fastapi-api}-db
+    container_name: fastapi-api-db
     ports:
-      - "${POSTGRES_HOST_PORT:-5500}:5432"
+      - "${POSTGRES_HOST_PORT:-45500}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
@@ -76,12 +76,14 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: ${APP_NAME:-fastapi-api}-redis
+    container_name: fastapi-api-redis
     ports:
-      - "${REDIS_HOST_PORT:-6500}:6379"
+      - "${REDIS_HOST_PORT:-46500}:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD}"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
     networks:
       - backend
     deploy:

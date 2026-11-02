@@ -1,0 +1,19 @@
+# ©AngelaMos | 2026
+# compose.yml
+
+name: frontend-template
+
+services:
+  frontend:
+    build:
+      context: .
+      target: production
+      args:
+        VITE_APP_TITLE: ${VITE_APP_TITLE:-Your project}
+    ports:
+      - "${FRONTEND_HOST_PORT:-48100}:8080"
+    environment:
+      API_PROXY_TARGET: ${API_PROXY_TARGET:?Set API_PROXY_TARGET to the FastAPI backend}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: unless-stopped

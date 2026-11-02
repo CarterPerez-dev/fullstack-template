@@ -3,6 +3,12 @@
  * register.tsx
  */
 
+import { Link, router } from 'expo-router'
+import type React from 'react'
+import { useState } from 'react'
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { Stack, Text, YStack } from 'tamagui'
+import { z } from 'zod'
 import { useRegister } from '@/api/hooks'
 import { userCreateRequestSchema } from '@/api/types'
 import { PASSWORD_CONSTRAINTS } from '@/core/config'
@@ -21,12 +27,6 @@ import {
   PasswordInput,
 } from '@/shared/components'
 import { haptics } from '@/shared/utils'
-import { Link, router } from 'expo-router'
-import type React from 'react'
-import { useState } from 'react'
-import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
-import { Stack, Text, YStack } from 'tamagui'
-import { z } from 'zod'
 
 const registerFormSchema = userCreateRequestSchema
   .extend({
@@ -99,62 +99,62 @@ export default function RegisterScreen(): React.ReactElement {
         >
           <YStack alignItems="center">
             <Card>
-            <CardHeader>
-              <CardTitle>Sign up</CardTitle>
-              <CardSubtitle>Create a new account</CardSubtitle>
-            </CardHeader>
+              <CardHeader>
+                <CardTitle>Sign up</CardTitle>
+                <CardSubtitle>Create a new account</CardSubtitle>
+              </CardHeader>
 
-            <CardContent>
-              <Input
-                label="Email"
-                placeholder="xxx@example.com"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-                textContentType="emailAddress"
-              />
+              <CardContent>
+                <Input
+                  label="Email"
+                  placeholder="xxx@example.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  textContentType="emailAddress"
+                />
 
-              <PasswordInput
-                label="Password"
-                value={password}
-                onChangeText={setPassword}
-                textContentType="newPassword"
-              />
+                <PasswordInput
+                  label="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  textContentType="newPassword"
+                />
 
-              <PasswordInput
-                label="Repeat Password"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                textContentType="newPassword"
-              />
+                <PasswordInput
+                  label="Repeat Password"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  textContentType="newPassword"
+                />
 
-              {error && (
-                <Text fontSize={12} color="$errorDefault">
-                  {error}
-                </Text>
-              )}
+                {error && (
+                  <Text fontSize={12} color="$errorDefault">
+                    {error}
+                  </Text>
+                )}
 
-              <Stack marginTop="$2">
-                <Button
-                  fullWidth
-                  loading={register.isPending}
-                  onPress={handleSubmit}
-                >
-                  {register.isPending ? 'Creating account...' : 'Sign up'}
-                </Button>
-              </Stack>
-            </CardContent>
+                <Stack marginTop="$2">
+                  <Button
+                    fullWidth
+                    loading={register.isPending}
+                    onPress={handleSubmit}
+                  >
+                    {register.isPending ? 'Creating account...' : 'Sign up'}
+                  </Button>
+                </Stack>
+              </CardContent>
 
-            <CardFooter>
-              <CardFooterText>
-                Already have an account?{' '}
-                <Link href="/(auth)/login" asChild>
-                  <CardFooterLink>Login</CardFooterLink>
-                </Link>
-              </CardFooterText>
-            </CardFooter>
+              <CardFooter>
+                <CardFooterText>
+                  Already have an account?{' '}
+                  <Link href="/(auth)/login" asChild>
+                    <CardFooterLink>Login</CardFooterLink>
+                  </Link>
+                </CardFooterText>
+              </CardFooter>
             </Card>
           </YStack>
         </ScrollView>

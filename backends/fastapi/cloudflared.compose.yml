@@ -9,7 +9,7 @@
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: ${APP_NAME:-fastapi-api}-tunnel
+    container_name: fastapi-api-tunnel
     command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     networks:
       - backend

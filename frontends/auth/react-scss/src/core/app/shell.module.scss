@@ -2,3 +2,98 @@
 // © AngelaMos | 2026
 // shell.module.scss
 // ===================
+
+.shell {
+  min-height: 100dvh;
+  line-height: 1.6;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  border-bottom: 1px solid #ddd;
+}
+
+.name {
+  font-weight: 600;
+  color: inherit;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+
+  a {
+    color: inherit;
+    text-underline-offset: 0.3em;
+  }
+
+  a[aria-current='page'] {
+    font-weight: 600;
+    text-decoration: underline;
+  }
+}
+
+.content {
+  width: min(100%, 64rem);
+  margin-inline: auto;
+  padding: clamp(1rem, 4vw, 3rem);
+  overflow-wrap: anywhere;
+
+  :where(h1, h2, p, form, dl) {
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  form {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 28rem;
+    margin-bottom: 2rem;
+  }
+
+  label {
+    display: grid;
+    gap: 0.25rem;
+  }
+}
+
+.shell :where(input, button) {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #aaa;
+  border-radius: 0.25rem;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+}
+
+.shell :where(a, input, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.skip {
+  position: absolute;
+  inset: 0 auto auto 1rem;
+  padding: 0.5rem;
+  color: #111;
+  background: #fff;
+  transform: translateY(-150%);
+
+  &:focus {
+    transform: translateY(0);
+  }
+}

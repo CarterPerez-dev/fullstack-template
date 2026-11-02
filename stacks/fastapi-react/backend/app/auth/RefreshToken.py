@@ -46,6 +46,8 @@ class RefreshToken(Base, UUIDMixin, TimestampMixin):
     """
     __tablename__ = "refresh_tokens"
 
+    token_version: Mapped[int] = mapped_column(default = 0, server_default = "0")
+
     token_hash: Mapped[str] = mapped_column(
         String(TOKEN_HASH_LENGTH),
         unique = True,

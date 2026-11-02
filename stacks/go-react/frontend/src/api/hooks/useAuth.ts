@@ -15,18 +15,15 @@ import {
   AUTH_ERROR_MESSAGES,
   AUTH_SUCCESS_MESSAGES,
   AuthResponseError,
-  isValidLogoutAllResponse,
-  isValidTokenResponse,
   isValidTokenWithUserResponse,
   isValidUserResponse,
   type LoginRequest,
-  type LogoutAllResponse,
   type PasswordChangeRequest,
   type TokenWithUserResponse,
   type UserResponse,
 } from '@/api/types'
 import { API_ENDPOINTS, QUERY_KEYS, ROUTES } from '@/config'
-import { apiClient, QUERY_STRATEGIES } from '@/core/api'
+import { apiClient, QUERY_STRATEGIES, refreshAccessToken } from '@/core/api'
 import { useAuthStore } from '@/core/lib'
 
 export const authQueries = {
@@ -62,17 +59,10 @@ export const useCurrentUser = (): UseQueryResult<UserResponse, Error> => {
 const performLogin = async (
   credentials: LoginRequest
 ): Promise<TokenWithUserResponse> => {
-  const formData = new URLSearchParams()
-  formData.append('username', credentials.username)
-  formData.append('password', credentials.password)
-
-  const response = await apiClient.post<unknown>(
-    API_ENDPOINTS.AUTH.LOGIN,
-    formData,
-    {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    }
-  )
+  const response = await apiClient.post<unknown>(API_ENDPOINTS.AUTH.LOGIN, {
+    email: credentials.username,
+    password: credentials.password,
+  })
 
   const data: unknown = response.data
 
@@ -118,13 +108,15 @@ const performLogout = async (): Promise<void> => {
   await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
 }
 
-export const useLogout = (): UseMutationResult<void, Error, void> => {
+export const useLogout = (): UseMutationResult<void, Error, void, number> => {
   const queryClient = useQueryClient()
   const logout = useAuthStore((s) => s.logout)
 
   return useMutation({
     mutationFn: performLogout,
-    onSuccess: (): void => {
+    onMutate: () => useAuthStore.getState().sessionVersion,
+    onSuccess: (_data, _variables, sessionVersion): void => {
+      if (sessionVersion !== useAuthStore.getState().sessionVersion) return
       logout()
 
       queryClient.removeQueries({ queryKey: authQueries.all() })
@@ -133,7 +125,8 @@ export const useLogout = (): UseMutationResult<void, Error, void> => {
 
       window.location.href = ROUTES.LOGIN
     },
-    onError: (): void => {
+    onError: (_error, _variables, sessionVersion): void => {
+      if (sessionVersion !== useAuthStore.getState().sessionVersion) return
       logout()
       queryClient.removeQueries({ queryKey: authQueries.all() })
       window.location.href = ROUTES.LOGIN
@@ -141,40 +134,29 @@ export const useLogout = (): UseMutationResult<void, Error, void> => {
   })
 }
 
-const performLogoutAll = async (): Promise<LogoutAllResponse> => {
-  const response = await apiClient.post<unknown>(API_ENDPOINTS.AUTH.LOGOUT_ALL)
-  const data: unknown = response.data
-
-  if (!isValidLogoutAllResponse(data)) {
-    throw new AuthResponseError(
-      AUTH_ERROR_MESSAGES.INVALID_LOGOUT_RESPONSE,
-      API_ENDPOINTS.AUTH.LOGOUT_ALL
-    )
-  }
-
-  return data
+const performLogoutAll = async (): Promise<void> => {
+  await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT_ALL)
 }
 
-export const useLogoutAll = (): UseMutationResult<
-  LogoutAllResponse,
-  Error,
-  void
-> => {
+export const useLogoutAll = (): UseMutationResult<void, Error, void, number> => {
   const queryClient = useQueryClient()
   const logout = useAuthStore((s) => s.logout)
 
   return useMutation({
     mutationFn: performLogoutAll,
-    onSuccess: (data: LogoutAllResponse): void => {
+    onMutate: () => useAuthStore.getState().sessionVersion,
+    onSuccess: (_data, _variables, sessionVersion): void => {
+      if (sessionVersion !== useAuthStore.getState().sessionVersion) return
       logout()
 
       queryClient.removeQueries({ queryKey: authQueries.all() })
 
-      toast.success(`Logged out from ${data.revoked_sessions} session(s)`)
+      toast.success('Logged out from all sessions')
 
       window.location.href = ROUTES.LOGIN
     },
-    onError: (error: Error): void => {
+    onError: (error: Error, _variables, sessionVersion): void => {
+      if (sessionVersion !== useAuthStore.getState().sessionVersion) return
       const message =
         error instanceof AuthResponseError
           ? error.message
@@ -212,30 +194,26 @@ export const useChangePassword = (): UseMutationResult<
 
 export const useRefreshAuth = (): (() => Promise<void>) => {
   const queryClient = useQueryClient()
-  const { setAccessToken, login, logout } = useAuthStore()
+  const { login, logout } = useAuthStore()
 
   return async (): Promise<void> => {
+    const { sessionVersion } = useAuthStore.getState()
     try {
-      const response = await apiClient.post<unknown>(API_ENDPOINTS.AUTH.REFRESH)
-      const data: unknown = response.data
-
-      if (!isValidTokenResponse(data)) {
-        throw new AuthResponseError(
-          AUTH_ERROR_MESSAGES.INVALID_TOKEN_RESPONSE,
-          API_ENDPOINTS.AUTH.REFRESH
-        )
-      }
-
-      setAccessToken(data.access_token)
+      const accessToken = await refreshAccessToken()
+      if (sessionVersion !== useAuthStore.getState().sessionVersion) return
 
       const userResponse = await apiClient.get<unknown>(API_ENDPOINTS.AUTH.ME)
       const userData: unknown = userResponse.data
 
-      if (isValidUserResponse(userData)) {
-        login(userData, data.access_token)
+      if (
+        sessionVersion === useAuthStore.getState().sessionVersion &&
+        isValidUserResponse(userData)
+      ) {
+        login(userData, accessToken)
         queryClient.setQueryData(authQueries.me(), userData)
       }
     } catch {
+      if (sessionVersion !== useAuthStore.getState().sessionVersion) return
       logout()
       queryClient.removeQueries({ queryKey: authQueries.all() })
     }

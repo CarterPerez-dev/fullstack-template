@@ -3,8 +3,7 @@
  * Card.tsx
  */
 
-import { type GetProps, styled } from 'tamagui'
-import { Stack, Text } from 'tamagui'
+import { type GetProps, Stack, styled, Text } from 'tamagui'
 
 export const Card = styled(Stack, {
   name: 'Card',

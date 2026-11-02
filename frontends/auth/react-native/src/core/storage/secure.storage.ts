@@ -18,10 +18,23 @@ export const SECURE_KEYS = {
 
 type SecureKey = (typeof SECURE_KEYS)[keyof typeof SECURE_KEYS]
 
+let pendingOperation: Promise<void> = Promise.resolve()
+
+const serialize = <T>(operation: () => Promise<T>): Promise<T> => {
+  const result = pendingOperation.then(operation)
+  pendingOperation = result.then(
+    () => undefined,
+    () => undefined
+  )
+  return result
+}
+
 export const secureStorage = {
   async getItem(key: SecureKey): Promise<string | null> {
     try {
-      return await SecureStore.getItemAsync(key, KEYCHAIN_OPTIONS)
+      return await serialize(() =>
+        SecureStore.getItemAsync(key, KEYCHAIN_OPTIONS)
+      )
     } catch {
       return null
     }
@@ -29,7 +42,9 @@ export const secureStorage = {
 
   async setItem(key: SecureKey, value: string): Promise<boolean> {
     try {
-      await SecureStore.setItemAsync(key, value, KEYCHAIN_OPTIONS)
+      await serialize(() =>
+        SecureStore.setItemAsync(key, value, KEYCHAIN_OPTIONS)
+      )
       return true
     } catch {
       return false
@@ -38,7 +53,7 @@ export const secureStorage = {
 
   async deleteItem(key: SecureKey): Promise<boolean> {
     try {
-      await SecureStore.deleteItemAsync(key, KEYCHAIN_OPTIONS)
+      await serialize(() => SecureStore.deleteItemAsync(key, KEYCHAIN_OPTIONS))
       return true
     } catch {
       return false

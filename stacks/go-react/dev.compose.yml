@@ -1,0 +1,30 @@
+# ©AngelaMos | 2026
+# dev.compose.yml
+
+name: go-api-dev
+
+include:
+  - path: go-backend/dev.compose.yml
+    env_file: go-backend/.env.development
+
+services:
+  frontend:
+    build:
+      context: frontend
+      target: development
+    ports:
+      - "${FRONTEND_HOST_PORT:-48081}:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend_modules:/app/node_modules
+    environment:
+      CI: "true"
+      VITE_API_TARGET: http://api:8080
+      VITE_API_URL: /api
+    command: sh -c "pnpm install --frozen-lockfile && exec pnpm dev --host 0.0.0.0"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  frontend_modules:

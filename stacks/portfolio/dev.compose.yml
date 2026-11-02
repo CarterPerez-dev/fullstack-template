@@ -1,0 +1,135 @@
+# =============================================================================
+# AngelaMos | 2026
+# dev.compose.yml
+# =============================================================================
+# Development compose - Nginx + Vite + FastAPI + PostgreSQL + Redis
+# Uses .env.development (different ports than production)
+# =============================================================================
+
+name: portfolio-template-dev
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: portfolio-template-nginx-dev
+    ports:
+      - "${NGINX_HOST_PORT:-50703}:80"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/dev.nginx:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../infra/docker/vite.dev
+    container_name: portfolio-template-frontend-dev
+    ports:
+      - "${FRONTEND_HOST_PORT:-54050}:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend_modules:/app/node_modules
+    command: sh -c "pnpm install && exec pnpm dev --host 0.0.0.0"
+    environment:
+      - CI=true
+      - VITE_API_URL=${VITE_API_URL:-/api}
+      - VITE_API_TARGET=${VITE_API_TARGET:-http://backend:8000}
+      - VITE_APP_TITLE=${VITE_APP_TITLE:-My App}
+    networks:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/fastapi.dev
+    container_name: portfolio-template-backend-dev
+    ports:
+      - "${BACKEND_HOST_PORT:-47389}:8000"
+    volumes:
+      - ./backend:/app
+      - backend_cache:/app/.venv
+      - uploads_data:/app/uploads
+    env_file:
+      - .env.development
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+      - UPLOAD_DIR=/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  db:
+    image: postgres:18-alpine
+    container_name: portfolio-template-db-dev
+    ports:
+      - "${POSTGRES_HOST_PORT:-31214}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-app_db}
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-app_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: portfolio-template-redis-dev
+    ports:
+      - "${REDIS_HOST_PORT:-30337}:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD}"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  backend_cache:
+  frontend_modules:
+  uploads_data:

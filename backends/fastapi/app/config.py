@@ -13,6 +13,7 @@ from pydantic import (
     RedisDsn,
     SecretStr,
     PostgresDsn,
+    field_validator,
     model_validator,
 )
 from pydantic_settings import (
@@ -138,6 +139,14 @@ class Settings(BaseSettings):
                        "ERROR",
                        "CRITICAL"] = "INFO"
     LOG_JSON_FORMAT: bool = True
+
+    @field_validator("ADMIN_EMAIL", mode = "before")
+    @classmethod
+    def blank_admin_email_to_none(cls, value: object) -> object:
+        """
+        Normalize optional empty email configuration
+        """
+        return None if isinstance(value, str) and not value.strip() else value
 
     @model_validator(mode = "after")
     def validate_production_settings(self) -> "Settings":

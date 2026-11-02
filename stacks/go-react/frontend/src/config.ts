@@ -15,7 +15,7 @@ export const API_ENDPOINTS = {
   },
   USERS: {
     BASE: `/${API_VERSION}/users`,
-    BY_ID: (id: string) => `/${API_VERSION}/users/${id}`,
+    BY_ID: (id: string) => `/${API_VERSION}/admin/users/${id}`,
     ME: `/${API_VERSION}/users/me`,
     REGISTER: `/${API_VERSION}/users`,
   },

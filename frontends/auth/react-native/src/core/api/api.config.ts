@@ -14,11 +14,12 @@ import { ApiError, ApiErrorCode, transformAxiosError } from './errors'
 
 interface RequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean
+  _sessionVersion?: number
 }
 
-interface RefreshSubscriber {
-  resolve: (token: string) => void
-  reject: (error: Error) => void
+interface RefreshAttempt {
+  sessionVersion: number
+  promise: Promise<string>
 }
 
 interface RefreshResponse {
@@ -27,10 +28,14 @@ interface RefreshResponse {
 }
 
 const getBaseURL = (): string => {
-  if (__DEV__) {
-    return `http://${APP_CONFIG.DEV_IP}:${APP_CONFIG.DEV_PORT}`
+  const url = APP_CONFIG.API_URL
+  if (!url || !/^https?:\/\//.test(url)) {
+    throw new Error('Set EXPO_PUBLIC_API_URL to your backend URL')
   }
-  return APP_CONFIG.PROD_API_URL
+  if (!__DEV__ && !url.startsWith('https://')) {
+    throw new Error('EXPO_PUBLIC_API_URL must use HTTPS in production')
+  }
+  return url.replace(/\/$/, '')
 }
 
 export const apiClient: AxiosInstance = axios.create({
@@ -39,38 +44,34 @@ export const apiClient: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-let isRefreshing = false
-let refreshSubscribers: RefreshSubscriber[] = []
+let refreshAttempt: RefreshAttempt | null = null
 let accessToken: string | null = null
+let sessionVersion = 0
 
 export const setAccessToken = (token: string | null): void => {
+  sessionVersion += 1
   accessToken = token
 }
+
+export const getSessionVersion = (): number => sessionVersion
 
 export const getAccessToken = (): string | null => {
   return accessToken
 }
 
-const processRefreshQueue = (error: Error | null, token: string | null): void => {
-  refreshSubscribers.forEach((subscriber) => {
-    if (error !== null) {
-      subscriber.reject(error)
-    } else if (token !== null) {
-      subscriber.resolve(token)
-    }
-  })
-  refreshSubscribers = []
+const assertCurrentSession = (version: number | undefined): void => {
+  if (version !== sessionVersion) {
+    throw new ApiError(
+      'Session changed',
+      ApiErrorCode.AUTHENTICATION_ERROR,
+      HTTP_STATUS.UNAUTHORIZED
+    )
+  }
 }
 
-const addRefreshSubscriber = (
-  resolve: (token: string) => void,
-  reject: (error: Error) => void
-): void => {
-  refreshSubscribers.push({ resolve, reject })
-}
-
-const handleTokenRefresh = async (): Promise<RefreshResponse> => {
+const handleTokenRefresh = async (version: number): Promise<string> => {
   const refreshToken = await secureStorage.getItem(SECURE_KEYS.REFRESH_TOKEN)
+  assertCurrentSession(version)
 
   if (!refreshToken) {
     throw new ApiError(
@@ -99,36 +100,84 @@ const handleTokenRefresh = async (): Promise<RefreshResponse> => {
 
   const { access_token, refresh_token: newRefreshToken } = response.data
 
-  if (typeof access_token !== 'string' || access_token.length === 0) {
+  if (
+    typeof access_token !== 'string' ||
+    access_token.length === 0 ||
+    typeof newRefreshToken !== 'string' ||
+    newRefreshToken.length === 0
+  ) {
     throw new ApiError(
-      'Invalid access token',
+      'Invalid refresh response tokens',
       ApiErrorCode.AUTHENTICATION_ERROR,
       HTTP_STATUS.UNAUTHORIZED
     )
   }
 
-  await secureStorage.setItem(SECURE_KEYS.REFRESH_TOKEN, newRefreshToken)
+  assertCurrentSession(version)
+  const saved = await secureStorage.setItem(
+    SECURE_KEYS.REFRESH_TOKEN,
+    newRefreshToken
+  )
+  assertCurrentSession(version)
+  if (!saved) throw new Error('Unable to save the refreshed session securely')
 
-  return response.data
+  return access_token
 }
 
-let onAuthFailure: (() => void) | null = null
+let onAuthFailure: (() => void | Promise<void>) | null = null
 
-export const setAuthFailureHandler = (handler: () => void): void => {
+export const setAuthFailureHandler = (
+  handler: () => void | Promise<void>
+): void => {
   onAuthFailure = handler
 }
 
 const handleAuthFailure = async (): Promise<void> => {
-  await secureStorage.deleteItem(SECURE_KEYS.REFRESH_TOKEN)
   setAccessToken(null)
-  onAuthFailure?.()
+  const [removed] = await Promise.all([
+    secureStorage.deleteItem(SECURE_KEYS.REFRESH_TOKEN),
+    onAuthFailure?.(),
+  ])
+  if (!removed) throw new Error('Unable to remove the saved session securely')
+}
+
+export const refreshAccessToken = (): Promise<string> => {
+  const version = sessionVersion
+  if (refreshAttempt?.sessionVersion === version) {
+    return refreshAttempt.promise
+  }
+  const promise = handleTokenRefresh(version)
+    .then((token) => {
+      assertCurrentSession(version)
+      accessToken = token
+      return token
+    })
+    .catch(async (error: unknown) => {
+      if (version === sessionVersion) await handleAuthFailure()
+      throw error instanceof ApiError
+        ? error
+        : new ApiError(
+            'Session expired',
+            ApiErrorCode.AUTHENTICATION_ERROR,
+            HTTP_STATUS.UNAUTHORIZED
+          )
+    })
+    .finally(() => {
+      if (refreshAttempt?.promise === promise) refreshAttempt = null
+    })
+  refreshAttempt = { sessionVersion: version, promise }
+  return promise
 }
 
 apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+  (config: RequestConfig): InternalAxiosRequestConfig => {
+    config._sessionVersion ??= sessionVersion
+    assertCurrentSession(config._sessionVersion)
     const token = getAccessToken()
     if (token !== null && token.length > 0) {
       config.headers.Authorization = `Bearer ${token}`
+    } else {
+      config.headers.delete('Authorization')
     }
     return config
   },
@@ -138,60 +187,41 @@ apiClient.interceptors.request.use(
 )
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    assertCurrentSession((response.config as RequestConfig)._sessionVersion)
+    return response
+  },
   async (error: AxiosError): Promise<unknown> => {
+    if (error instanceof ApiError) return Promise.reject(error)
     const originalRequest = error.config as RequestConfig | undefined
 
     if (originalRequest === undefined) {
       return Promise.reject(transformAxiosError(error))
     }
+    assertCurrentSession(originalRequest._sessionVersion)
 
     const isUnauthorized = error.response?.status === HTTP_STATUS.UNAUTHORIZED
     const isNotRetried = originalRequest._retry !== true
     const isNotAuthEndpoint =
       !originalRequest.url?.includes('refresh') &&
       !originalRequest.url?.includes('login') &&
-      !originalRequest.url?.includes('register')
+      !originalRequest.url?.includes('register') &&
+      originalRequest.url !== API_ENDPOINTS.AUTH.LOGOUT
 
     if (isUnauthorized && isNotRetried && isNotAuthEndpoint) {
-      if (isRefreshing) {
-        return new Promise<unknown>((resolve, reject) => {
-          addRefreshSubscriber(
-            (newToken: string): void => {
-              originalRequest.headers.Authorization = `Bearer ${newToken}`
-              resolve(apiClient(originalRequest))
-            },
-            (refreshError: Error): void => {
-              reject(refreshError)
-            }
-          )
-        })
-      }
-
       originalRequest._retry = true
-      isRefreshing = true
-
-      try {
-        const { access_token: newToken } = await handleTokenRefresh()
-        setAccessToken(newToken)
-        processRefreshQueue(null, newToken)
-        originalRequest.headers.Authorization = `Bearer ${newToken}`
-        return await apiClient(originalRequest)
-      } catch (refreshError: unknown) {
-        const apiError =
-          refreshError instanceof ApiError
-            ? refreshError
-            : new ApiError(
-                'Session expired',
-                ApiErrorCode.AUTHENTICATION_ERROR,
-                HTTP_STATUS.UNAUTHORIZED
-              )
-        processRefreshQueue(apiError, null)
-        await handleAuthFailure()
-        return Promise.reject(apiError)
-      } finally {
-        isRefreshing = false
+      const currentToken = getAccessToken()
+      if (
+        currentToken &&
+        originalRequest.headers.Authorization !== `Bearer ${currentToken}`
+      ) {
+        originalRequest.headers.Authorization = `Bearer ${currentToken}`
+        return apiClient(originalRequest)
       }
+      const newToken = await refreshAccessToken()
+      assertCurrentSession(originalRequest._sessionVersion)
+      originalRequest.headers.Authorization = `Bearer ${newToken}`
+      return apiClient(originalRequest)
     }
 
     return Promise.reject(transformAxiosError(error))

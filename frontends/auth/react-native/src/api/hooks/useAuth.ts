@@ -4,6 +4,7 @@
  */
 
 import {
+  type QueryClient,
   type UseMutationResult,
   type UseQueryResult,
   useMutation,
@@ -23,7 +24,13 @@ import {
   type PasswordChangeRequest,
   type UserResponse,
 } from '@/api/types'
-import { apiClient, QUERY_STRATEGIES, setAccessToken } from '@/core/api'
+import {
+  apiClient,
+  getSessionVersion,
+  QUERY_STRATEGIES,
+  queryClientPersister,
+  setAccessToken,
+} from '@/core/api'
 import { API_ENDPOINTS, QUERY_KEYS } from '@/core/config'
 import { useAuthStore } from '@/core/lib'
 import { SECURE_KEYS, secureStorage } from '@/core/storage'
@@ -96,8 +103,17 @@ export const useLogin = (): UseMutationResult<
   return useMutation({
     mutationFn: performLogin,
     onSuccess: async (data: MobileLoginResponse): Promise<void> => {
+      setAccessToken(null)
+      const sessionVersion = getSessionVersion()
+      const saved = await secureStorage.setItem(
+        SECURE_KEYS.REFRESH_TOKEN,
+        data.refresh_token
+      )
+      if (sessionVersion !== getSessionVersion()) {
+        throw new Error('Session changed while saving credentials')
+      }
+      if (!saved) throw new Error('Unable to save the session securely')
       setAccessToken(data.access_token)
-      await secureStorage.setItem(SECURE_KEYS.REFRESH_TOKEN, data.refresh_token)
 
       login(data.user)
 
@@ -107,34 +123,45 @@ export const useLogin = (): UseMutationResult<
 }
 
 const performLogout = async (): Promise<void> => {
-  await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
+  const refreshToken = await secureStorage.getItem(SECURE_KEYS.REFRESH_TOKEN)
+  if (refreshToken) {
+    await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, {
+      refresh_token: refreshToken,
+    })
+  }
 }
 
-export const useLogout = (): UseMutationResult<void, Error, void> => {
+const clearLocalSession = async (
+  queryClient: QueryClient,
+  expectedVersion: number | undefined
+): Promise<void> => {
+  if (expectedVersion !== getSessionVersion()) return
+  setAccessToken(null)
+  const clearedVersion = getSessionVersion()
+  useAuthStore.getState().logout()
+  queryClient.clear()
+  const [removed] = await Promise.all([
+    secureStorage.deleteItem(SECURE_KEYS.REFRESH_TOKEN),
+    queryClientPersister.removeClient(),
+  ])
+  if (clearedVersion !== getSessionVersion()) return
+  router.replace('/(auth)/login')
+  if (!removed) throw new Error('Unable to remove the saved session securely')
+}
+
+export const useLogout = (): UseMutationResult<void, Error, void, number> => {
   const queryClient = useQueryClient()
-  const logout = useAuthStore((s) => s.logout)
 
   return useMutation({
     mutationFn: performLogout,
-    onSuccess: async (): Promise<void> => {
-      setAccessToken(null)
-      await secureStorage.deleteItem(SECURE_KEYS.REFRESH_TOKEN)
-
-      logout()
-
-      queryClient.removeQueries({ queryKey: authQueries.all() })
-
-      router.replace('/(auth)/login')
-    },
-    onError: async (): Promise<void> => {
-      setAccessToken(null)
-      await secureStorage.deleteItem(SECURE_KEYS.REFRESH_TOKEN)
-
-      logout()
-
-      queryClient.removeQueries({ queryKey: authQueries.all() })
-
-      router.replace('/(auth)/login')
+    onMutate: getSessionVersion,
+    onSettled: async (
+      _data,
+      _error,
+      _variables,
+      sessionVersion
+    ): Promise<void> => {
+      await clearLocalSession(queryClient, sessionVersion)
     },
   })
 }
@@ -156,22 +183,16 @@ const performLogoutAll = async (): Promise<LogoutAllResponse> => {
 export const useLogoutAll = (): UseMutationResult<
   LogoutAllResponse,
   Error,
-  void
+  void,
+  number
 > => {
   const queryClient = useQueryClient()
-  const logout = useAuthStore((s) => s.logout)
 
   return useMutation({
     mutationFn: performLogoutAll,
-    onSuccess: async (): Promise<void> => {
-      setAccessToken(null)
-      await secureStorage.deleteItem(SECURE_KEYS.REFRESH_TOKEN)
-
-      logout()
-
-      queryClient.removeQueries({ queryKey: authQueries.all() })
-
-      router.replace('/(auth)/login')
+    onMutate: getSessionVersion,
+    onSuccess: async (_data, _variables, sessionVersion): Promise<void> => {
+      await clearLocalSession(queryClient, sessionVersion)
     },
   })
 }
@@ -185,9 +206,16 @@ const performPasswordChange = async (
 export const useChangePassword = (): UseMutationResult<
   void,
   Error,
-  PasswordChangeRequest
+  PasswordChangeRequest,
+  number
 > => {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: performPasswordChange,
+    onMutate: getSessionVersion,
+    onSuccess: async (_data, _variables, sessionVersion): Promise<void> => {
+      await clearLocalSession(queryClient, sessionVersion)
+    },
   })
 }

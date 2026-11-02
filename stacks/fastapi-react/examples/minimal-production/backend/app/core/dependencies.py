@@ -33,7 +33,7 @@ oauth2_scheme = OAuth2PasswordBearer(
     auto_error = True,
 )
 
-DBSession = Annotated[AsyncSession, Depends(get_db_session)]
+DBSession = Annotated[AsyncSession, Depends(get_db_session, scope = "function")]
 
 
 async def get_current_user(

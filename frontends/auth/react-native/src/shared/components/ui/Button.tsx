@@ -3,10 +3,9 @@
  * Button.tsx
  */
 
-import { haptics } from '@/shared/utils'
 import type React from 'react'
-import { type GetProps, styled } from 'tamagui'
-import { Stack, Text } from 'tamagui'
+import { type GetProps, Stack, styled, Text } from 'tamagui'
+import { haptics } from '@/shared/utils'
 
 const ButtonFrame = styled(Stack, {
   name: 'Button',

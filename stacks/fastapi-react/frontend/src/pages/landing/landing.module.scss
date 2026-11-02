@@ -3,221 +3,32 @@
 // landing.module.scss
 // ===================
 
-@use '../../styles' as *;
-
 .page {
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: $bg-default;
-  color: $text-default;
-  @include flex-column;
-}
+  width: min(100%, 48rem);
+  margin-inline: auto;
+  padding: clamp(2rem, 8vh, 6rem) 1.5rem;
 
-.topBar {
-  @include flex-between;
-  padding: $space-4 $space-6;
-  border-bottom: 1px solid $border-default;
-  font-family: $font-mono;
-  font-size: $font-size-3xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-widest;
-  color: $text-lighter;
-
-  @include breakpoint-up('md') {
-    padding: $space-4 $space-8;
-    font-size: $font-size-2xs;
+  h1 {
+    margin-bottom: 1rem;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    line-height: 1.2;
   }
-}
-
-.topLeft {
-  display: flex;
-  align-items: center;
-  gap: $space-4;
-}
-
-.mark {
-  color: $text-default;
-  font-weight: $font-weight-bold;
-}
-
-.topRight {
-  display: flex;
-  align-items: center;
-  gap: $space-6;
-}
-
-.status {
-  color: $accent-default;
-}
-
-.hero {
-  padding: $space-16 $space-6 $space-10;
-
-  @include breakpoint-up('md') {
-    padding: $space-20 $space-8 $space-12;
-  }
-
-  @include breakpoint-up('lg') {
-    padding: $space-28 $space-8 $space-16;
-  }
-}
-
-.heroTitle {
-  font-weight: $font-weight-black;
-  font-size: clamp(#{$font-size-5xl}, 10vw, #{$font-size-9xl});
-  line-height: 0.92;
-  letter-spacing: $tracking-tighter;
-}
-
-.heroSub {
-  margin-top: $space-6;
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-wide;
-  color: $text-lighter;
-  max-width: 48ch;
-  line-height: $line-height-relaxed;
-
-  @include breakpoint-up('md') {
-    margin-top: $space-8;
-  }
-}
-
-.pattern {
-  height: 36px;
-  margin: 0 $space-6;
-  background: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 4px,
-    $border-default 4px,
-    $border-default 5px
-  );
-
-  @include breakpoint-up('md') {
-    margin: 0 $space-8;
-    height: 48px;
-  }
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1px;
-  background: $border-default;
-  margin: $space-6;
-  border: 1px solid $border-default;
-
-  @include breakpoint-up('md') {
-    grid-template-columns: 1fr 1fr;
-    margin: $space-8;
-  }
-}
-
-.cell {
-  background: $bg-default;
-  padding: $space-5 $space-6;
-}
-
-.cellLabel {
-  display: block;
-  font-family: $font-mono;
-  font-size: $font-size-2xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-widest;
-  color: $accent-default;
-  margin-bottom: $space-4;
-}
-
-.list {
-  list-style: none;
-  @include flex-column;
-  gap: $space-2;
-  font-size: $font-size-sm;
-  color: $text-light;
-  line-height: $line-height-normal;
 }
 
 .actions {
   display: flex;
-  gap: $space-3;
-  padding: $space-6;
-  padding-top: $space-4;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-top: 2rem;
 
-  @include breakpoint-up('md') {
-    padding: $space-8;
-    padding-top: $space-6;
-  }
-}
-
-.primaryBtn {
-  display: inline-flex;
-  align-items: center;
-  padding: $space-3 $space-6;
-  background: $accent-default;
-  color: $bg-default;
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  font-weight: $font-weight-medium;
-  text-transform: uppercase;
-  letter-spacing: $tracking-wider;
-  text-decoration: none;
-  border: 1px solid $accent-default;
-  @include transition-fast;
-
-  @include hover {
-    background: $accent-hover;
-    border-color: $accent-hover;
-  }
-}
-
-.secondaryBtn {
-  display: inline-flex;
-  align-items: center;
-  padding: $space-3 $space-6;
-  background: transparent;
-  color: $text-default;
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-wider;
-  text-decoration: none;
-  border: 1px solid $border-strong;
-  @include transition-fast;
-
-  @include hover {
-    border-color: $text-default;
-  }
-}
-
-.footer {
-  margin-top: auto;
-  padding: $space-4 $space-6;
-  border-top: 1px solid $border-default;
-  @include flex-between;
-  font-family: $font-mono;
-  font-size: $font-size-3xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-wider;
-  color: $text-muted;
-
-  @include breakpoint-up('md') {
-    padding: $space-4 $space-8;
-  }
-}
-
-.github {
-  color: $text-lighter;
-  @include transition-fast;
-  display: flex;
-
-  @include hover {
-    color: $text-default;
+  a {
+    padding-block: 0.5rem;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
 
-  svg {
-    width: 16px;
-    height: 16px;
+  a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
   }
 }

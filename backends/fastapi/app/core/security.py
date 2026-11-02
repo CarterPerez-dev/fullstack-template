@@ -19,7 +19,6 @@ from fastapi import Response
 from pwdlib import PasswordHash
 
 from config import (
-    API_PREFIX,
     settings,
     TokenType,
 )

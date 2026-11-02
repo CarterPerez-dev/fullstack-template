@@ -1,6 +1,6 @@
 module github.com/carterperez-dev/templates/go-backend
 
-go 1.25.0
+go 1.26.10
 
 require (
 	github.com/go-chi/chi/v5 v5.2.3

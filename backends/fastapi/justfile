@@ -5,9 +5,6 @@
 # Standalone FastAPI Backend
 # =============================================================================
 
-set dotenv-filename := ".env.development"
-set dotenv-load
-set export
 set shell := ["bash", "-uc"]
 set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
@@ -151,39 +148,39 @@ tunnel-logs:
 
 [group('dev')]
 dev-up *ARGS:
-    docker compose -f dev.compose.yml up {{ARGS}}
+    docker compose -f dev.compose.yml --env-file .env.development up {{ARGS}}
 
 [group('dev')]
 dev-start *ARGS:
-    docker compose -f dev.compose.yml up -d {{ARGS}}
+    docker compose -f dev.compose.yml --env-file .env.development up -d {{ARGS}}
 
 [group('dev')]
 dev-down *ARGS:
-    docker compose -f dev.compose.yml down {{ARGS}}
+    docker compose -f dev.compose.yml --env-file .env.development down {{ARGS}}
 
 [group('dev')]
 dev-stop:
-    docker compose -f dev.compose.yml stop
+    docker compose -f dev.compose.yml --env-file .env.development stop
 
 [group('dev')]
 dev-build *ARGS:
-    docker compose -f dev.compose.yml build {{ARGS}}
+    docker compose -f dev.compose.yml --env-file .env.development build {{ARGS}}
 
 [group('dev')]
 dev-rebuild:
-    docker compose -f dev.compose.yml build --no-cache
+    docker compose -f dev.compose.yml --env-file .env.development build --no-cache
 
 [group('dev')]
 dev-logs *SERVICE:
-    docker compose -f dev.compose.yml logs -f {{SERVICE}}
+    docker compose -f dev.compose.yml --env-file .env.development logs -f {{SERVICE}}
 
 [group('dev')]
 dev-ps:
-    docker compose -f dev.compose.yml ps
+    docker compose -f dev.compose.yml --env-file .env.development ps
 
 [group('dev')]
 dev-shell:
-    docker compose -f dev.compose.yml exec -it api /bin/bash
+    docker compose -f dev.compose.yml --env-file .env.development exec -it api /bin/bash
 
 # =============================================================================
 # Database (Production)
@@ -191,23 +188,23 @@ dev-shell:
 
 [group('db')]
 migrate *ARGS:
-    docker compose --env-file .env exec api alembic upgrade {{ARGS}}
+    docker compose --env-file .env exec api uv run alembic upgrade {{ARGS}}
 
 [group('db')]
 migration message:
-    docker compose --env-file .env exec api alembic revision --autogenerate -m "{{message}}"
+    docker compose --env-file .env exec api uv run alembic revision --autogenerate -m "{{message}}"
 
 [group('db')]
 rollback:
-    docker compose --env-file .env exec api alembic downgrade -1
+    docker compose --env-file .env exec api uv run alembic downgrade -1
 
 [group('db')]
 db-history:
-    docker compose --env-file .env exec api alembic history --verbose
+    docker compose --env-file .env exec api uv run alembic history --verbose
 
 [group('db')]
 db-current:
-    docker compose --env-file .env exec api alembic current
+    docker compose --env-file .env exec api uv run alembic current
 
 # =============================================================================
 # Database (Development)
@@ -215,15 +212,15 @@ db-current:
 
 [group('db-dev')]
 dev-migrate *ARGS:
-    docker compose -f dev.compose.yml exec api alembic upgrade {{ARGS}}
+    docker compose -f dev.compose.yml --env-file .env.development exec api uv run alembic upgrade {{ARGS}}
 
 [group('db-dev')]
 dev-migration message:
-    docker compose -f dev.compose.yml exec api alembic revision --autogenerate -m "{{message}}"
+    docker compose -f dev.compose.yml --env-file .env.development exec api uv run alembic revision --autogenerate -m "{{message}}"
 
 [group('db-dev')]
 dev-rollback:
-    docker compose -f dev.compose.yml exec api alembic downgrade -1
+    docker compose -f dev.compose.yml --env-file .env.development exec api uv run alembic downgrade -1
 
 # =============================================================================
 # Database (Local - no Docker)

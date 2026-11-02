@@ -47,6 +47,7 @@ cors:
   allowed_headers:
     - "Accept"
     - "Authorization"
+    - "X-Auth-Transport"
     - "Content-Type"
     - "X-Request-ID"
   allow_credentials: true

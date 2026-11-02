@@ -3,7 +3,7 @@
 enums.py
 """
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 import sqlalchemy as sa
@@ -46,7 +46,7 @@ class SafeEnum(sa.Enum):
             raise
 
 
-class Environment(str, Enum):
+class Environment(StrEnum):
     """
     Application environment.
     """
@@ -55,7 +55,7 @@ class Environment(str, Enum):
     PRODUCTION = "production"
 
 
-class UserRole(str, Enum):
+class UserRole(StrEnum):
     """
     User roles for authorization.
     """
@@ -64,7 +64,7 @@ class UserRole(str, Enum):
     ADMIN = "admin"
 
 
-class TokenType(str, Enum):
+class TokenType(StrEnum):
     """
     JWT token types.
     """
@@ -72,7 +72,7 @@ class TokenType(str, Enum):
     REFRESH = "refresh"
 
 
-class HealthStatus(str, Enum):
+class HealthStatus(StrEnum):
     """
     Health check status values.
     """

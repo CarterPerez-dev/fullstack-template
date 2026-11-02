@@ -1,140 +1,104 @@
-===========================================
-Fullstack Templates Collection
-===========================================
+.. ©AngelaMos | 2026
+.. README.rst
 
-*Production-ready stack templates with TypeScript, SCSS, and modern backends*
-
-Available Templates
+Fullstack Templates
 ===================
 
-**Default Stack: FastAPI + React**
-  Full-stack web application with Python FastAPI backend and React 19 frontend.
-  Uses ``compose.yml`` and ``dev.compose.yml``.
+Opinionated application starters, generated with one command. The same generator
+uses a local checkout during development and individual versioned archives for
+public distribution.
 
-**Go-Chi Stack: Go + React**
-  Full-stack web application with Go Chi backend and React 19 frontend.
-  Uses ``compose.go.yml`` and ``dev.compose.go.yml``.
-  Backend located in ``alternate-backends/go-chi/``.
+The coordinated release is in preparation. Application runtime checks, dependency
+updates, remote synchronization, and hosted installation are still release gates.
+See the `audit and verification record <docs/plans/2026-10-25-template-release-audit.md>`_.
 
-**iOS Mobile: Expo + React Native**
-  Mobile application using Expo and React Native.
-  Located in ``mobile/ios-expo/``.
-  Connects to any backend via API (no Docker required).
+Generate locally
+----------------
 
-----
-
-Setup
-=====
-
-Option 1: GitHub Template (Recommended)
----------------------------------------
-
-Click the **"Use this template"** button above, or:
+Python 3.10 or newer is required. From this repository:
 
 .. code-block:: bash
 
-   gh repo create my-project --template CarterPerez-dev/fullstack-template
-   cd my-project
+   just install
+   template list
 
-Option 2: Clone
----------------
-
-.. code-block:: bash
-
-   git clone https://github.com/CarterPerez-dev/fullstack-template.git my-project
-   cd my-project
-   rm -rf .git && git init
-
-Prerequisites (Optional but Recommended)
-----------------------------------------
-
-Install `just <https://github.com/casey/just>`_ command runner:
+Then, from the directory where you keep projects:
 
 .. code-block:: bash
 
-   curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
+   template fastapi-stack my-app
+   cd my-app
+   just
 
-Then add ``~/bin`` to your PATH if not already.
+The local installation links to this checkout. Subsequent generations use its
+current files. Generated projects are independent copies; their edits do not flow
+back into the template automatically.
 
-Installation
+Available variants
+------------------
+
+* ``go``: Go API, PostgreSQL, Redis, ES256 authentication.
+* ``fastapi``: FastAPI API, PostgreSQL, Redis, JWT authentication.
+* ``open``: React and SCSS without authentication.
+* ``frontend``: React authentication client for the FastAPI contract.
+* ``native``: Expo authentication client for the FastAPI mobile contract.
+* ``fastapi-stack``: FastAPI with its React client.
+* ``go-stack``: Go with a React client adapted to its API contract.
+* ``portfolio``: Editable portfolio with administration through an owner account.
+
+The standalone clients accept an explicit backend endpoint:
+
+.. code-block:: bash
+
+   template frontend my-web --api-url https://api.example.com/api
+   template native my-mobile --api-url https://api.example.com/api
+
+Use the API base before ``/v1``. For a direct backend this is normally the origin;
+the bundled web proxy exposes it under ``/api``.
+
+Initialization
+--------------
+
+Generation creates separate production and development dotenv files, credentials,
+high host ports, project identifiers, and ``.template.json`` provenance. It excludes
+real environment files, signing keys, uploads, dependencies, and build artifacts.
+Existing project files are never overwritten. An existing ``.git`` directory in
+an otherwise empty destination is preserved.
+
+Run application services through each project's Docker Compose setup. The Go
+startup initializes a signing-key volume and applies checked migrations; Python
+startup applies Alembic migrations. Use HTTPS for production authentication.
+
+Public distribution
+-------------------
+
+The planned installer endpoint is ``https://angelamos.com/template/install.sh``.
+It is not confirmed deployed. After publication, it installs the small
+``template`` command; generation downloads only the requested stack archive.
+Checksums and source revision metadata accompany each release.
+
+See `generator and installer details <template-tool/README.md>`_ and
+`operations and release instructions <docs/template-operations.md>`_.
+
+Verification
 ------------
 
 .. code-block:: bash
 
-   chmod +x setup.sh
-   ./setup.sh
+   just check-template
+   python3 -B tests/release/check_generated.py go-stack development
 
-Or if you have just:
+The second command needs Docker and creates an isolated temporary project. It
+builds and starts that project, checks readiness and proxy routing, then removes
+only its own containers and volumes. CI covers all eight variants, PostgreSQL
+security tests, dependency audits, web builds, and Expo export before packaging.
+Configured CI gates are not evidence of a completed successful CI run.
 
-.. code-block:: bash
-
-   just setup
-
-This will:
-
-- Copy ``.env.example`` → ``.env`` with generated ``SECRET_KEY``
-- Move template files (LICENSE, CONTRIBUTING, etc.) to root
-- Install backend dependencies (uv sync)
-- Install frontend dependencies (pnpm install)
-
-Next Steps
-----------
-
-**For FastAPI + React (Default)**
-
-1. Edit ``.env`` with your configuration
-2. Start development: ``just dev-up`` or ``docker compose -f dev.compose.yml up``
-3. After creating models: ``just migration-local "initial"`` then ``just migrate-local head``
-
-**For Go-Chi + React**
-
-1. Edit ``.env`` with your configuration
-2. Start development: ``docker compose -f dev.compose.go.yml up``
-3. Production: ``docker compose -f compose.go.yml up``
-
-**For iOS Expo App**
-
-1. Navigate to ``mobile/ios-expo/``
-2. Follow the iOS-specific README for Expo setup
-3. Configure API endpoint to connect to your backend
-
-Run ``just`` to see all available commands.
-
-----
-
-Documentation
-=============
-
-Comprehensive guides for understanding and customizing this template:
-
-Backend
--------
-
-- `Backend Architecture <https://github.com/CarterPerez-dev/fullstack-template/blob/documentation/docs/wiki/backend.md>`_
-
-  Complete backend architecture including FastAPI setup, security patterns (JWT + Argon2id), database models, repository pattern, services, API endpoints, testing, and production deployment.
-
-Frontend
---------
-
-- `Frontend Architecture <https://github.com/CarterPerez-dev/fullstack-template/blob/documentation/docs/wiki/frontend.md>`_
-
-  React 19 + TypeScript architecture with TanStack Query, Zustand state management, complete design system (OKLCH colors), API integration patterns, SCSS utilities, and performance optimizations.
-
-Infrastructure
---------------
-
-- `Nginx Configuration <https://github.com/CarterPerez-dev/fullstack-template/blob/documentation/docs/wiki/nginx.md>`_
-
-  Reverse proxy setup, rate limiting, WebSocket proxying, caching strategies, security headers, and performance tuning for both development and production.
-
-- `Docker & Compose <https://github.com/CarterPerez-dev/fullstack-template/blob/documentation/docs/wiki/docker.md>`_
-
-  Multi-stage Dockerfiles, health checks, network segmentation, resource limits, security hardening, and complete containerization guide.
-
-----
+The frontend starter uses restrained spacing, system typography, and functional
+navigation. Its default screen provides no product branding or fabricated service
+status. Portfolio retains its content editor and configurable presentation.
 
 License
-=======
+-------
 
-MIT License - see - `LICENSE <https://github.com/CarterPerez-dev/fullstack-template/blob/documentation/docs/templates/LICENSE>`_
+See `LICENSE <LICENSE>`_.

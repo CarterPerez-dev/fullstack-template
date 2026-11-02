@@ -73,23 +73,11 @@ export function Component(): React.ReactElement {
         <Link to={ROUTES.HOME} className={styles.backLink}>
           &larr; Back
         </Link>
-        <h1 className={styles.title}>
-          Create
-          <br />
-          Account
-        </h1>
-        <div className={styles.meta}>
-          <span className={styles.metaItem}>STATUS: NEW USER</span>
-          <span className={styles.metaItem}>VERIFICATION: PENDING</span>
-          <span className={styles.metaItem}>AUTH: EMAIL + PASSWORD</span>
-        </div>
-        <div className={styles.pattern} />
+        <h1 className={styles.title}>Create an account</h1>
       </div>
 
       <div className={styles.formPanel}>
         <div className={styles.formContainer}>
-          <span className={styles.formLabel}>Registration</span>
-
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.field}>
               <label className={styles.label} htmlFor="email">

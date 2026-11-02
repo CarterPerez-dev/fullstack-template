@@ -3,305 +3,97 @@
 // shell.module.scss
 // ===================
 
-@use '../../styles' as *;
-
-$sidebar-w: 220px;
-$sidebar-w-collapsed: 60px;
-$header-h: 52px;
-
 .shell {
-  display: flex;
-  min-height: 100vh;
   min-height: 100dvh;
-  background: $bg-default;
-  color: $text-default;
-}
-
-.sidebar {
-  width: $sidebar-w;
-  background: $bg-alternative;
-  border-right: 1px solid $border-default;
-  @include flex-column;
-  flex-shrink: 0;
-  transition: width $duration-normal $ease-out, transform $duration-normal $ease-out;
-  overflow: hidden;
-
-  @include breakpoint-down('lg') {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    z-index: $z-fixed;
-    transform: translateX(-100%);
-  }
-
-  &.open {
-    transform: translateX(0);
-  }
-
-  &.collapsed {
-    width: $sidebar-w-collapsed;
-
-    .logo {
-      opacity: 0;
-      width: 0;
-    }
-
-    .navLabel {
-      opacity: 0;
-      width: 0;
-    }
-
-    .logoutText {
-      opacity: 0;
-      width: 0;
-    }
-  }
-}
-
-.sidebarHeader {
-  @include flex-between;
-  padding: $space-4;
-  border-bottom: 1px solid $border-default;
-  min-height: $header-h;
-}
-
-.logo {
-  font-family: $font-mono;
-  font-size: $font-size-2xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-widest;
-  color: $text-default;
-  white-space: nowrap;
-  overflow: hidden;
-  transition: opacity $duration-fast $ease-out, width $duration-fast $ease-out;
-}
-
-.collapseBtn {
-  color: $text-lighter;
-  @include flex-center;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  @include transition-fast;
-
-  @include hover {
-    color: $text-default;
-  }
-
-  @include breakpoint-down('lg') {
-    display: none;
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-}
-
-.nav {
-  @include flex-column;
-  padding: $space-2 0;
-  flex: 1;
-  overflow-y: auto;
-  @include hide-scrollbar;
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: $space-3;
-  padding: $space-2-5 $space-4;
-  font-size: $font-size-sm;
-  color: $text-lighter;
-  text-decoration: none;
-  border-left: 3px solid transparent;
-  @include transition-fast;
-  white-space: nowrap;
-
-  @include hover {
-    color: $text-default;
-    background: $bg-surface-75;
-  }
-
-  &.active {
-    color: $text-default;
-    border-left-color: $accent-default;
-    background: $bg-surface-75;
-  }
-}
-
-.adminItem {
-  margin-top: $space-2;
-  padding-top: $space-2-5;
-}
-
-.navIcon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-.navLabel {
-  white-space: nowrap;
-  overflow: hidden;
-  transition: opacity $duration-fast $ease-out, width $duration-fast $ease-out;
-}
-
-.sidebarFooter {
-  margin-top: auto;
-  padding: $space-3 $space-4;
-  border-top: 1px solid $border-default;
-}
-
-.logoutBtn {
-  display: flex;
-  align-items: center;
-  gap: $space-3;
-  width: 100%;
-  font-family: $font-mono;
-  font-size: $font-size-2xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-wide;
-  color: $text-lighter;
-  @include transition-fast;
-
-  @include hover {
-    color: $error-default;
-  }
-}
-
-.logoutIcon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-.logoutText {
-  white-space: nowrap;
-  overflow: hidden;
-  transition: opacity $duration-fast $ease-out, width $duration-fast $ease-out;
-}
-
-.overlay {
-  @include absolute-fill;
-  position: fixed;
-  z-index: $z-overlay;
-  background: rgba(0, 0, 0, 0.6);
-  border: none;
-  cursor: default;
-
-  @include breakpoint-up('lg') {
-    display: none;
-  }
-}
-
-.main {
-  flex: 1;
-  @include flex-column;
-  min-width: 0;
+  line-height: 1.6;
 }
 
 .header {
-  @include flex-between;
-  padding: $space-3 $space-6;
-  border-bottom: 1px solid $border-default;
-  min-height: $header-h;
-  background: $bg-default;
-}
-
-.headerLeft {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: $space-3;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  border-bottom: 1px solid #ddd;
 }
 
-.menuBtn {
-  @include flex-center;
-  width: 32px;
-  height: 32px;
-  color: $text-lighter;
-  @include transition-fast;
-
-  @include hover {
-    color: $text-default;
-  }
-
-  @include breakpoint-up('lg') {
-    display: none;
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
+.name {
+  font-weight: 600;
+  color: inherit;
 }
 
-.pageTitle {
-  font-weight: $font-weight-bold;
-  font-size: $font-size-lg;
-  letter-spacing: $tracking-tight;
-}
-
-.headerRight {
+.nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-}
+  gap: 1rem;
 
-.avatar {
-  @include flex-center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid $border-strong;
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  font-weight: $font-weight-medium;
-  color: $text-default;
-  text-decoration: none;
-  @include transition-fast;
+  a {
+    color: inherit;
+    text-underline-offset: 0.3em;
+  }
 
-  @include hover {
-    border-color: $accent-default;
-    color: $accent-default;
+  a[aria-current='page'] {
+    font-weight: 600;
+    text-decoration: underline;
   }
 }
 
 .content {
-  flex: 1;
-  padding: $space-6;
-  overflow-y: auto;
+  width: min(100%, 64rem);
+  margin-inline: auto;
+  padding: clamp(1rem, 4vw, 3rem);
+  overflow-wrap: anywhere;
 
-  @include breakpoint-up('md') {
-    padding: $space-8;
+  :where(h1, h2, p, form, dl) {
+    margin-bottom: 1rem;
   }
-}
 
-.error {
-  padding: $space-8;
-  @include flex-column;
-  gap: $space-4;
+  h1 {
+    font-size: 2rem;
+  }
 
   h2 {
-    font-weight: $font-weight-bold;
-    font-size: $font-size-lg;
-    color: $error-default;
+    font-size: 1.2rem;
   }
 
-  pre {
-    font-family: $font-mono;
-    font-size: $font-size-xs;
-    color: $text-lighter;
-    padding: $space-4;
-    border: 1px solid $border-default;
-    overflow-x: auto;
+  form {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 28rem;
+    margin-bottom: 2rem;
+  }
+
+  label {
+    display: grid;
+    gap: 0.25rem;
   }
 }
 
-.loading {
-  padding: $space-8;
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-wider;
-  color: $text-lighter;
+.shell :where(input, button) {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #aaa;
+  border-radius: 0.25rem;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+}
+
+.shell :where(a, input, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.skip {
+  position: absolute;
+  inset: 0 auto auto 1rem;
+  padding: 0.5rem;
+  color: #111;
+  background: #fff;
+  transform: translateY(-150%);
+
+  &:focus {
+    transform: translateY(0);
+  }
 }

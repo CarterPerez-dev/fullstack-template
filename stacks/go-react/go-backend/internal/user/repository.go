@@ -19,8 +19,11 @@ type Repository interface {
 	Create(ctx context.Context, user *User) error
 	GetByID(ctx context.Context, id string) (*User, error)
 	GetByEmail(ctx context.Context, email string) (*User, error)
-	Update(ctx context.Context, user *User) error
-	UpdatePassword(ctx context.Context, id, passwordHash string) error
+	UpdateName(ctx context.Context, id string, name *string) (*User, error)
+	UpdateRole(ctx context.Context, id, role string) (*User, error)
+	UpdateTier(ctx context.Context, id, tier string) (*User, error)
+	UpdatePassword(ctx context.Context, id, previousHash, passwordHash string) error
+	RehashPassword(ctx context.Context, id, previousHash, passwordHash string) error
 	IncrementTokenVersion(ctx context.Context, id string) error
 	SoftDelete(ctx context.Context, id string) error
 	List(ctx context.Context, params ListUsersParams) ([]User, int, error)
@@ -100,39 +103,59 @@ func (r *repository) GetByEmail(
 	return &user, nil
 }
 
-func (r *repository) Update(ctx context.Context, user *User) error {
+func (r *repository) UpdateName(ctx context.Context, id string, name *string) (*User, error) {
 	query := `
 		UPDATE users
-		SET name = $2, role = $3, tier = $4, updated_at = NOW()
+		SET name = COALESCE($2, name), updated_at = NOW()
 		WHERE id = $1 AND deleted_at IS NULL
-		RETURNING updated_at`
+		RETURNING id, email, password_hash, name, role, tier, token_version,
+		          created_at, updated_at, deleted_at`
+	return r.updateAttribute(ctx, query, id, name)
+}
 
-	err := r.db.GetContext(ctx, &user.UpdatedAt, query,
-		user.ID,
-		user.Name,
-		user.Role,
-		user.Tier,
-	)
+func (r *repository) UpdateRole(ctx context.Context, id, role string) (*User, error) {
+	query := `
+		UPDATE users
+		SET role = $2, updated_at = NOW()
+		WHERE id = $1 AND deleted_at IS NULL
+		RETURNING id, email, password_hash, name, role, tier, token_version,
+		          created_at, updated_at, deleted_at`
+	return r.updateAttribute(ctx, query, id, role)
+}
+
+func (r *repository) UpdateTier(ctx context.Context, id, tier string) (*User, error) {
+	query := `
+		UPDATE users
+		SET tier = $2, updated_at = NOW()
+		WHERE id = $1 AND deleted_at IS NULL
+		RETURNING id, email, password_hash, name, role, tier, token_version,
+		          created_at, updated_at, deleted_at`
+	return r.updateAttribute(ctx, query, id, tier)
+}
+
+func (r *repository) updateAttribute(ctx context.Context, query, id string, value any) (*User, error) {
+	var account User
+	err := r.db.GetContext(ctx, &account, query, id, value)
 	if errors.Is(err, sql.ErrNoRows) {
-		return fmt.Errorf("update user: %w", core.ErrNotFound)
+		return nil, fmt.Errorf("update user: %w", core.ErrNotFound)
 	}
 	if err != nil {
-		return fmt.Errorf("update user: %w", err)
+		return nil, fmt.Errorf("update user: %w", err)
 	}
 
-	return nil
+	return &account, nil
 }
 
 func (r *repository) UpdatePassword(
 	ctx context.Context,
-	id, passwordHash string,
+	id, previousHash, passwordHash string,
 ) error {
 	query := `
 		UPDATE users
-		SET password_hash = $2, updated_at = NOW()
-		WHERE id = $1 AND deleted_at IS NULL`
+		SET password_hash = $3, token_version = token_version + 1, updated_at = NOW()
+		WHERE id = $1 AND password_hash = $2 AND deleted_at IS NULL`
 
-	result, err := r.db.ExecContext(ctx, query, id, passwordHash)
+	result, err := r.db.ExecContext(ctx, query, id, previousHash, passwordHash)
 	if err != nil {
 		return fmt.Errorf("update password: %w", err)
 	}
@@ -143,9 +166,30 @@ func (r *repository) UpdatePassword(
 	}
 
 	if rows == 0 {
-		return fmt.Errorf("update password: %w", core.ErrNotFound)
+		return fmt.Errorf("password changed concurrently: %w", core.ErrConflict)
 	}
 
+	return nil
+}
+
+func (r *repository) RehashPassword(
+	ctx context.Context,
+	id, previousHash, passwordHash string,
+) error {
+	result, err := r.db.ExecContext(ctx, `
+		UPDATE users SET password_hash = $3, updated_at = NOW()
+		WHERE id = $1 AND password_hash = $2 AND deleted_at IS NULL`,
+		id, previousHash, passwordHash)
+	if err != nil {
+		return fmt.Errorf("rehash password: %w", err)
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("rehash password: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("password changed concurrently: %w", core.ErrConflict)
+	}
 	return nil
 }
 

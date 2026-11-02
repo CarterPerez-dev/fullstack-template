@@ -5,9 +5,11 @@ package auth
 
 import (
 	"context"
+	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -47,7 +49,11 @@ func NewJWTManager(cfg config.JWTConfig) (*JWTManager, error) {
 		return nil, fmt.Errorf("set algorithm: %w", setErr)
 	}
 
-	keyID := uuid.New().String()[:8]
+	thumbprint, err := privateKey.Thumbprint(crypto.SHA256)
+	if err != nil {
+		return nil, fmt.Errorf("derive key id: %w", err)
+	}
+	keyID := base64.RawURLEncoding.EncodeToString(thumbprint)
 	if setErr := privateKey.Set(jwk.KeyIDKey, keyID); setErr != nil {
 		return nil, fmt.Errorf("set key id: %w", setErr)
 	}

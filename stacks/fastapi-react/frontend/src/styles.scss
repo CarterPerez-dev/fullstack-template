@@ -8,10 +8,13 @@
 @forward 'styles/mixins';
 
 @use 'styles/reset';
-@use 'styles/fonts' as f;
+@use 'styles/tokens' as *;
+@use 'styles/fonts' as *;
 
 body {
-  font-family: f.$font-sans;
+  font-family: $font-sans;
+  color: $color-text;
+  background-color: $color-bg;
 }
 
 #root {

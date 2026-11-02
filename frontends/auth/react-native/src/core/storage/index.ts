@@ -3,5 +3,5 @@
 // index.ts
 // ===================
 
-export * from './secure.storage'
 export * from './app.storage'
+export * from './secure.storage'

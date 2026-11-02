@@ -189,6 +189,7 @@ func loadDefaults(k *koanf.Koanf) error {
 		"cors.allowed_headers": []string{
 			"Accept",
 			"Authorization",
+			"X-Auth-Transport",
 			"Content-Type",
 			"X-Request-ID",
 		},

@@ -1,0 +1,273 @@
+// ===================
+// © AngelaMos | 2026
+// shell.module.scss
+// ===================
+
+@use '../../styles/tokens' as *;
+
+$sidebar-width: 15rem;
+$sidebar-collapsed: 4.25rem;
+
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: $sidebar-width;
+  display: flex;
+  flex-direction: column;
+  background: $color-gray-900;
+  color: $color-gray-100;
+  z-index: $z-dropdown;
+  transition: transform $duration-normal $ease, width $duration-normal $ease;
+
+  @media (max-width: $breakpoint-md) {
+    transform: translateX(-100%);
+  }
+
+  &.open {
+    transform: translateX(0);
+  }
+
+  &.collapsed {
+    width: $sidebar-collapsed;
+  }
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-5 $space-5 $space-4;
+}
+
+.logo {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.collapseBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  background: none;
+  color: $color-gray-400;
+  cursor: pointer;
+  border-radius: $radius-sm;
+
+  &:hover {
+    color: $color-white;
+  }
+
+  @media (max-width: $breakpoint-md) {
+    display: none;
+  }
+}
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: $space-2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 $space-3;
+  border-radius: $radius-md;
+  color: $color-gray-300;
+  text-decoration: none;
+  font-size: $font-size-sm;
+  white-space: nowrap;
+  transition: background $duration-fast $ease, color $duration-fast $ease;
+
+  &:hover {
+    background: $color-gray-800;
+    color: $color-white;
+  }
+
+  &.active {
+    background: $color-gray-800;
+    color: $color-white;
+  }
+}
+
+.navIcon {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.navLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .collapsed & {
+    display: none;
+  }
+}
+
+.sidebarFooter {
+  padding: $space-3 $space-2 $space-4;
+  border-top: 1px solid $color-gray-800;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 $space-3;
+  border: none;
+  background: none;
+  color: $color-gray-300;
+  font-size: $font-size-sm;
+  text-decoration: none;
+  border-radius: $radius-md;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-gray-800;
+    color: $color-white;
+  }
+}
+
+.logoutIcon {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.logoutText {
+  .collapsed & {
+    display: none;
+  }
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 40%);
+  border: none;
+  z-index: $z-base;
+
+  @media (min-width: #{$breakpoint-md + 1px}) {
+    display: none;
+  }
+}
+
+.main {
+  margin-left: $sidebar-width;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left $duration-normal $ease;
+
+  &.collapsed {
+    margin-left: $sidebar-collapsed;
+  }
+
+  @media (max-width: $breakpoint-md) {
+    margin-left: 0;
+  }
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: $z-base;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-4 $space-6;
+  background: $color-bg;
+  border-bottom: 1px solid $color-border;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.menuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: $color-text;
+  cursor: pointer;
+
+  @media (max-width: $breakpoint-md) {
+    display: inline-flex;
+  }
+}
+
+.pageTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: $radius-full;
+  background: $color-gray-900;
+  color: $color-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+}
+
+.content {
+  flex: 1;
+}
+
+.error {
+  padding: $space-8;
+  color: $color-text;
+
+  pre {
+    margin-top: $space-4;
+    padding: $space-4;
+    background: $color-surface;
+    border-radius: $radius-md;
+    overflow-x: auto;
+    font-size: $font-size-sm;
+  }
+}
+
+.loading {
+  padding: $space-12;
+  text-align: center;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+}

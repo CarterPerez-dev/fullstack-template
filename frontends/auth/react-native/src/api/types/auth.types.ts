@@ -41,8 +41,8 @@ export const tokenWithUserResponseSchema = tokenResponseSchema.extend({
 })
 
 export const mobileLoginResponseSchema = z.object({
-  access_token: z.string(),
-  refresh_token: z.string().optional(),
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1),
   token_type: z.string(),
   user: userResponseSchema,
 })

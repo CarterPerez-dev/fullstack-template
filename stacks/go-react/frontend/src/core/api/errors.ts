@@ -61,6 +61,7 @@ export class ApiError extends Error {
 }
 
 interface ApiErrorResponse {
+  error?: { message?: string }
   detail?: string | { msg: string; type: string }[]
   message?: string
 }
@@ -85,6 +86,8 @@ export function transformAxiosError(error: AxiosError<unknown>): ApiError {
       })
       message = 'Validation error'
     }
+  } else if (data?.error?.message) {
+    message = data.error.message
   } else if (data?.message) {
     message = data.message
   }

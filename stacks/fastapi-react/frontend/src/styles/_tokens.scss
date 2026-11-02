@@ -1,41 +1,26 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // _tokens.scss
 // ===================
+// Neutral baseline. No brand identity -- grayscale palette, system type, plain
+// spacing scale. Design on top of these; nothing here implies a look.
 
-// ============================================================================
-// SPACING (8px base system)
-// ============================================================================
+// Spacing (8px base)
 $space-0: 0;
-$space-px: 1px;
-$space-0-5: 0.125rem;
 $space-1: 0.25rem;
-$space-1-5: 0.375rem;
 $space-2: 0.5rem;
-$space-2-5: 0.625rem;
 $space-3: 0.75rem;
-$space-3-5: 0.875rem;
 $space-4: 1rem;
 $space-5: 1.25rem;
 $space-6: 1.5rem;
-$space-7: 1.75rem;
 $space-8: 2rem;
-$space-9: 2.25rem;
 $space-10: 2.5rem;
-$space-11: 2.75rem;
 $space-12: 3rem;
-$space-14: 3.5rem;
 $space-16: 4rem;
 $space-20: 5rem;
 $space-24: 6rem;
-$space-28: 7rem;
-$space-32: 8rem;
 
-// ============================================================================
-// TYPOGRAPHY SCALE
-// ============================================================================
-$font-size-3xs: 0.625rem;
-$font-size-2xs: 0.6875rem;
+// Font sizes
 $font-size-xs: 0.75rem;
 $font-size-sm: 0.875rem;
 $font-size-base: 1rem;
@@ -44,158 +29,56 @@ $font-size-xl: 1.25rem;
 $font-size-2xl: 1.5rem;
 $font-size-3xl: 1.875rem;
 $font-size-4xl: 2.25rem;
-$font-size-5xl: 3rem;
 
-// ============================================================================
-// FONT WEIGHTS
-// ============================================================================
-$font-weight-regular: 400;
+// Weights / line-height / radius
+$font-weight-normal: 400;
 $font-weight-medium: 500;
 $font-weight-semibold: 600;
-
-// ============================================================================
-// LINE HEIGHTS
-// ============================================================================
-$line-height-none: 1;
-$line-height-tight: 1.2;
-$line-height-snug: 1.375;
+$font-weight-bold: 700;
+$line-height-tight: 1.25;
 $line-height-normal: 1.5;
-$line-height-relaxed: 1.625;
-
-// ============================================================================
-// LETTER SPACING
-// ============================================================================
-$tracking-tighter: -0.05em;
-$tracking-tight: -0.025em;
-$tracking-normal: 0;
-$tracking-wide: 0.025em;
-$tracking-wider: 0.05em;
-
-// ============================================================================
-// COLORS
-// ============================================================================
-$white: hsl(0, 0%, 100%);
-$black: hsl(0, 0%, 0%);
-
-// Auth
-$bg-page: hsl(0, 0%, 10.5%);
-$bg-card: hsl(0, 0%, 6.2%);
-
-// Home/landing
-$bg-landing: hsl(0, 0%, 10.8%);
-
-$bg-default: hsl(0, 0%, 7.1%);
-$bg-alternative: hsl(0, 0%, 5.9%);
-$bg-surface-75: hsl(0, 0%, 9%);
-$bg-surface-100: hsl(0, 0%, 12.2%);
-$bg-surface-200: hsl(0, 0%, 14.1%);
-$bg-surface-300: hsl(0, 0%, 16.1%);
-$bg-control: hsl(0, 0%, 10%);
-$bg-selection: hsl(0, 0%, 19.2%);
-$bg-overlay: hsl(0, 0%, 14.1%);
-$bg-overlay-hover: hsl(0, 0%, 18%);
-
-$border-muted: hsl(0, 0%, 11.1%);
-$border-default: hsl(0, 0%, 18%);
-$border-strong: hsl(0, 0%, 22.4%);
-$border-stronger: hsl(0, 0%, 27.1%);
-$border-control: hsl(0, 0%, 22.4%);
-
-$text-default: hsl(0, 0%, 98%);
-$text-light: hsl(0, 0%, 70.6%);
-$text-lighter: hsl(0, 0%, 53.7%);
-$text-muted: hsl(0, 0%, 30.2%);
-
-$error-default: hsl(0, 72%, 51%);
-$error-light: hsl(0, 72%, 65%);
-
-// ============================================================================
-// BORDER RADIUS
-// ============================================================================
-$radius-none: 0;
-$radius-xs: 2px;
-$radius-sm: 4px;
-$radius-md: 6px;
-$radius-lg: 8px;
-$radius-xl: 12px;
+$line-height-relaxed: 1.75;
+$radius-sm: 0.25rem;
+$radius-md: 0.5rem;
+$radius-lg: 0.75rem;
 $radius-full: 9999px;
 
-// ============================================================================
-// Z-INDEX SCALE
-// ============================================================================
-$z-hide: -1;
-$z-base: 0;
-$z-dropdown: 100;
-$z-sticky: 200;
-$z-fixed: 300;
-$z-overlay: 400;
-$z-modal: 500;
-$z-popover: 600;
-$z-tooltip: 700;
-$z-toast: 800;
-$z-max: 9999;
+// Neutral grayscale
+$color-white: #fff;
+$color-black: #000;
+$color-gray-50:  #fafafa;
+$color-gray-100: #f4f4f5;
+$color-gray-200: #e4e4e7;
+$color-gray-300: #d4d4d8;
+$color-gray-400: #a1a1aa;
+$color-gray-500: #71717a;
+$color-gray-600: #52525b;
+$color-gray-700: #3f3f46;
+$color-gray-800: #27272a;
+$color-gray-900: #18181b;
 
-// ============================================================================
-// TRANSITIONS
-// ============================================================================
-$duration-instant: 0ms;
-$duration-fast: 100ms;
-$duration-normal: 150ms;
-$duration-slow: 200ms;
+// Neutral semantic aliases
+$color-bg: $color-white;
+$color-surface: $color-gray-50;
+$color-border: $color-gray-200;
+$color-text: $color-gray-900;
+$color-text-muted: $color-gray-500;
 
-$ease-out: cubic-bezier(0, 0, 0.2, 1);
-$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-
-// ============================================================================
-// BREAKPOINTS
-// ============================================================================
-$breakpoint-xs: 360px;
-$breakpoint-sm: 480px;
+// Breakpoints
+$breakpoint-xs: 480px;
+$breakpoint-sm: 640px;
 $breakpoint-md: 768px;
 $breakpoint-lg: 1024px;
 $breakpoint-xl: 1280px;
 $breakpoint-2xl: 1536px;
 
-// ============================================================================
-// CONTAINER WIDTHS
-// ============================================================================
-$container-xs: 20rem;
-$container-sm: 24rem;
-$container-md: 28rem;
-$container-lg: 32rem;
-$container-xl: 36rem;
-$container-2xl: 42rem;
-$container-full: 100%;
+// Z-index
+$z-base: 1;
+$z-dropdown: 1000;
+$z-modal: 1300;
+$z-toast: 1400;
 
-// ============================================================================
-// ACCENT COLORS
-// ============================================================================
-$accent-default: hsl(22, 85%, 52%);
-$accent-hover: hsl(22, 85%, 60%);
-$accent-muted: hsl(22, 40%, 35%);
-
-// ============================================================================
-// EXTENDED TYPOGRAPHY SCALE
-// ============================================================================
-$font-size-6xl: 3.75rem;
-$font-size-7xl: 4.5rem;
-$font-size-8xl: 6rem;
-$font-size-9xl: 8rem;
-
-// ============================================================================
-// EXTENDED FONT WEIGHTS
-// ============================================================================
-$font-weight-bold: 700;
-$font-weight-extrabold: 800;
-$font-weight-black: 900;
-
-// ============================================================================
-// EXTENDED LETTER SPACING
-// ============================================================================
-$tracking-widest: 0.1em;
-$tracking-mega: 0.2em;
-
-// ============================================================================
-// SUCCESS COLOR
-// ============================================================================
-$success-default: hsl(142, 60%, 45%);
+// Motion
+$duration-fast: 150ms;
+$duration-normal: 250ms;
+$ease: cubic-bezier(0.4, 0, 0.2, 1);

@@ -3,10 +3,6 @@
  * profile.tsx
  */
 
-import { useChangePassword, useCurrentUser } from '@/api/hooks'
-import { useUpdateProfile } from '@/api/hooks/useUsers'
-import { Button, DottedBackground, Input, PasswordInput } from '@/shared/components'
-import { haptics } from '@/shared/utils'
 import { router } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
 import type React from 'react'
@@ -14,6 +10,16 @@ import { useEffect, useState } from 'react'
 import { Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Stack, Text, YStack } from 'tamagui'
+import { useChangePassword, useCurrentUser } from '@/api/hooks'
+import { useUpdateProfile } from '@/api/hooks/useUsers'
+import { PASSWORD_CONSTRAINTS } from '@/core/config'
+import {
+  Button,
+  DottedBackground,
+  Input,
+  PasswordInput,
+} from '@/shared/components'
+import { haptics } from '@/shared/utils'
 import { colors } from '@/theme/tokens'
 
 export default function ProfileScreen(): React.ReactElement {
@@ -67,9 +73,12 @@ export default function ProfileScreen(): React.ReactElement {
       return
     }
 
-    if (newPassword.length < 8) {
+    if (newPassword.length < PASSWORD_CONSTRAINTS.MIN_LENGTH) {
       haptics.error()
-      Alert.alert('Error', 'Password must be at least 8 characters')
+      Alert.alert(
+        'Error',
+        `Password must be at least ${PASSWORD_CONSTRAINTS.MIN_LENGTH} characters`
+      )
       return
     }
 
@@ -78,7 +87,7 @@ export default function ProfileScreen(): React.ReactElement {
       {
         onSuccess: () => {
           haptics.success()
-          Alert.alert('Success', 'Password changed')
+          Alert.alert('Success', 'Password changed. Sign in again to continue.')
           setCurrentPassword('')
           setNewPassword('')
           setConfirmPassword('')
@@ -210,7 +219,9 @@ export default function ProfileScreen(): React.ReactElement {
                       onPress={handleChangePassword}
                       loading={changePassword.isPending}
                     >
-                      {changePassword.isPending ? 'Updating...' : 'Update Password'}
+                      {changePassword.isPending
+                        ? 'Updating...'
+                        : 'Update Password'}
                     </Button>
                   </Stack>
                 </YStack>

@@ -31,8 +31,10 @@ function AppProviders({
   const logout = useAuthStore((s) => s.logout)
 
   useEffect(() => {
-    setAuthFailureHandler(() => {
+    setAuthFailureHandler(async () => {
       logout()
+      queryClient.clear()
+      await queryClientPersister.removeClient()
     })
   }, [logout])
 
@@ -40,7 +42,15 @@ function AppProviders({
     <TamaguiProvider config={config} defaultTheme="dark">
       <PersistQueryClientProvider
         client={queryClient}
-        persistOptions={{ persister: queryClientPersister }}
+        persistOptions={{
+          persister: queryClientPersister,
+          buster: 'public-cache-v1',
+          dehydrateOptions: {
+            shouldDehydrateQuery: (query) =>
+              query.meta?.persist === true && query.state.status === 'success',
+            shouldDehydrateMutation: () => false,
+          },
+        }}
       >
         {children}
       </PersistQueryClientProvider>

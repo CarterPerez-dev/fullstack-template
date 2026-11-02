@@ -100,15 +100,13 @@ class DatabaseSessionManager:
         if self._async_sessionmaker is None:
             raise RuntimeError("DatabaseSessionManager is not initialized")
 
-        session = self._async_sessionmaker()
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+        async with self._async_sessionmaker() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
 
     @contextlib.asynccontextmanager
     async def connect(self) -> AsyncIterator[AsyncConnection]:

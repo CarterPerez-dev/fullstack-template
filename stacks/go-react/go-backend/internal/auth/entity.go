@@ -12,6 +12,7 @@ type RefreshToken struct {
 	UserID       string     `db:"user_id"`
 	TokenHash    string     `db:"token_hash"`
 	FamilyID     string     `db:"family_id"`
+	TokenVersion int        `db:"token_version"`
 	ExpiresAt    time.Time  `db:"expires_at"`
 	CreatedAt    time.Time  `db:"created_at"`
 	IsUsed       bool       `db:"is_used"`

@@ -1,0 +1,33 @@
+# ©AngelaMos | 2026
+# .pre-commit-config.yaml
+
+repos:
+  - repo: local
+    hooks:
+      - id: staged-whitespace
+        name: Check staged whitespace
+        entry: git diff --cached --check
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: python-syntax
+        name: Parse Python source
+        entry: >-
+          python3 -c 'import ast, pathlib, sys; [ast.parse(pathlib.Path(path).read_bytes(), filename=path) for path in sys.argv[1:]]'
+        language: system
+        types: [python]
+      - id: installer-shellcheck
+        name: Check installer shell scripts
+        entry: shellcheck
+        language: system
+        files: ^(install\.sh|uninstall\.sh|template-tool/(template|install\.sh))$
+      - id: installer-syntax
+        name: Parse installer shell scripts
+        entry: bash -c 'for path; do bash -n "$path" || exit; done' --
+        language: system
+        files: ^(install\.sh|uninstall\.sh|template-tool/(template|install\.sh))$
+      - id: github-actions
+        name: Validate GitHub Actions
+        entry: actionlint
+        language: system
+        files: ^\.github/workflows/[^/]+\.(yml|yaml)$

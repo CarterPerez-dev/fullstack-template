@@ -3,6 +3,11 @@
  * login.tsx
  */
 
+import { Link, router } from 'expo-router'
+import type React from 'react'
+import { useState } from 'react'
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { Stack, Text, YStack } from 'tamagui'
 import { useLogin } from '@/api/hooks'
 import { loginRequestSchema } from '@/api/types'
 import {
@@ -20,11 +25,6 @@ import {
   PasswordInput,
 } from '@/shared/components'
 import { haptics } from '@/shared/utils'
-import { Link, router } from 'expo-router'
-import type React from 'react'
-import { useState } from 'react'
-import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
-import { Stack, Text, YStack } from 'tamagui'
 
 export default function LoginScreen(): React.ReactElement {
   const login = useLogin()
@@ -76,57 +76,57 @@ export default function LoginScreen(): React.ReactElement {
           keyboardShouldPersistTaps="handled"
         >
           <YStack alignItems="center">
-          <Card>
-            <CardHeader>
-              <CardTitle>Login</CardTitle>
-              <CardSubtitle>Welcome back</CardSubtitle>
-            </CardHeader>
+            <Card>
+              <CardHeader>
+                <CardTitle>Login</CardTitle>
+                <CardSubtitle>Welcome back</CardSubtitle>
+              </CardHeader>
 
-            <CardContent>
-              <Input
-                label="Email"
-                placeholder="xxx@example.com"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-                textContentType="emailAddress"
-              />
+              <CardContent>
+                <Input
+                  label="Email"
+                  placeholder="xxx@example.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  textContentType="emailAddress"
+                />
 
-              <PasswordInput
-                label="Password"
-                value={password}
-                onChangeText={setPassword}
-                textContentType="password"
-              />
+                <PasswordInput
+                  label="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  textContentType="password"
+                />
 
-              {error && (
-                <Text fontSize={12} color="$errorDefault">
-                  {error}
-                </Text>
-              )}
+                {error && (
+                  <Text fontSize={12} color="$errorDefault">
+                    {error}
+                  </Text>
+                )}
 
-              <Stack marginTop="$2">
-                <Button
-                  fullWidth
-                  loading={login.isPending}
-                  onPress={handleSubmit}
-                >
-                  {login.isPending ? 'Logging in...' : 'Login'}
-                </Button>
-              </Stack>
-            </CardContent>
+                <Stack marginTop="$2">
+                  <Button
+                    fullWidth
+                    loading={login.isPending}
+                    onPress={handleSubmit}
+                  >
+                    {login.isPending ? 'Logging in...' : 'Login'}
+                  </Button>
+                </Stack>
+              </CardContent>
 
-            <CardFooter>
-              <CardFooterText>
-                Don't have an account?{' '}
-                <Link href="/(auth)/register" asChild>
-                  <CardFooterLink>Sign up</CardFooterLink>
-                </Link>
-              </CardFooterText>
-            </CardFooter>
-          </Card>
+              <CardFooter>
+                <CardFooterText>
+                  Don't have an account?{' '}
+                  <Link href="/(auth)/register" asChild>
+                    <CardFooterLink>Sign up</CardFooterLink>
+                  </Link>
+                </CardFooterText>
+              </CardFooter>
+            </Card>
           </YStack>
         </ScrollView>
       </KeyboardAvoidingView>

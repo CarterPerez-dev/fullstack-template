@@ -9,7 +9,7 @@
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: ${APP_NAME:-no-auth-template}-tunnel
+    container_name: no-auth-template-tunnel
     command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     networks:
       - app

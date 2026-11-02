@@ -1,0 +1,21 @@
+# ©AngelaMos | 2026
+# dev.compose.yml
+
+name: native-template-dev
+
+services:
+  metro:
+    build: .
+    ports:
+      - "${METRO_HOST_PORT:-48200}:8081"
+    volumes:
+      - .:/app
+      - native_modules:/app/node_modules
+    env_file: .env.development
+    environment:
+      CI: "true"
+      EXPO_PACKAGER_PROXY_URL: http://${DEV_HOST:-localhost}:${METRO_HOST_PORT:-48200}
+    command: sh -c "pnpm install --frozen-lockfile && exec pnpm exec expo start --port 8081 --lan"
+
+volumes:
+  native_modules:

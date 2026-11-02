@@ -1,23 +1,31 @@
 # AngelaMos | 2026
 # compose.yml - Production compose
 
+name: go-api
+
 services:
   api:
-    image: go-backend:latest
+    build:
+      context: .
+      target: production
     ports:
-      - "8085:8080"
+      - "${API_HOST_PORT:-48000}:8080"
+    env_file: .env
     environment:
       - ENVIRONMENT=production
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/app?sslmode=disable
-      - REDIS_URL=redis://redis:6379/0
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    volumes:
+      - signing_keys:/keys:ro
     depends_on:
+      keys:
+        condition: service_completed_successfully
+      migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      test: ["CMD", "/api", "-healthcheck"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -29,14 +37,32 @@ services:
         reservations:
           memory: 128M
 
+  keys:
+    build:
+      context: .
+      target: production
+    command: ["-init-keys", "/keys"]
+    volumes:
+      - signing_keys:/keys
+
+  migrate:
+    build:
+      context: .
+      target: production
+    command: ["-migrate"]
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   postgres:
     image: postgres:18-alpine
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
       POSTGRES_DB: app
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -45,7 +71,9 @@ services:
 
   redis:
     image: redis:7-alpine
-    command: redis-server --appendonly yes
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD}"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
     volumes:
       - redisdata:/data
     healthcheck:
@@ -57,3 +85,4 @@ services:
 volumes:
   pgdata:
   redisdata:
+  signing_keys:

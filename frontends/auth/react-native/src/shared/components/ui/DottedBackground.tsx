@@ -3,10 +3,10 @@
 // DottedBackground.tsx
 // ===================
 
-import { colors } from '@/theme/tokens'
 import type React from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import Svg, { Circle, Defs, Pattern, Rect } from 'react-native-svg'
+import { colors } from '@/theme/tokens'
 
 interface DottedBackgroundProps {
   children: React.ReactNode
@@ -38,7 +38,12 @@ export function DottedBackground({
             width={dotSpacing}
             height={dotSpacing}
           >
-            <Circle cx={dotSpacing / 2} cy={dotSpacing / 2} r={dotSize} fill={dotColor} />
+            <Circle
+              cx={dotSpacing / 2}
+              cy={dotSpacing / 2}
+              r={dotSize}
+              fill={dotColor}
+            />
           </Pattern>
         </Defs>
         <Rect

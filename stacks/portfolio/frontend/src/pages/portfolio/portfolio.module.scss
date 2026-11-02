@@ -1,0 +1,396 @@
+// ===================
+// © AngelaMos | 2026
+// portfolio.module.scss
+// ===================
+
+@use '../../styles/tokens' as *;
+
+.root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--pf-bg);
+  color: var(--pf-text);
+  font-family: var(--pf-font-body);
+}
+
+.status {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-muted;
+  font-family: monospace;
+  font-size: $font-size-sm;
+}
+
+.inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: $space-20 $space-6 $space-24;
+}
+
+.hero {
+  padding-bottom: $space-16;
+}
+
+.eyebrow {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pf-muted);
+  padding-bottom: $space-10;
+}
+
+.avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: $radius-full;
+  object-fit: cover;
+  margin-bottom: $space-6;
+}
+
+.name {
+  font-family: var(--pf-font-display);
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: $font-weight-normal;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.headline {
+  font-size: $font-size-xl;
+  line-height: $line-height-normal;
+  color: var(--pf-muted);
+  margin: $space-5 0 0;
+  white-space: pre-line;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin-top: $space-8;
+}
+
+.metaChip {
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border: 1px solid var(--pf-muted);
+  border-radius: $radius-full;
+  color: var(--pf-text);
+}
+
+.section {
+  padding: $space-12 0;
+  border-top: 1px solid var(--pf-surface);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: $space-4;
+  margin-bottom: $space-8;
+}
+
+.sectionNum {
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  color: var(--pf-accent);
+}
+
+.sectionTitle {
+  font-family: var(--pf-font-display);
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-normal;
+  margin: 0;
+}
+
+.sectionLede {
+  font-size: $font-size-lg;
+  color: var(--pf-muted);
+  margin: 0 0 $space-6;
+}
+
+.paragraph {
+  font-size: $font-size-base;
+  line-height: $line-height-relaxed;
+  color: var(--pf-text);
+  margin: 0 0 $space-4;
+  max-width: 62ch;
+}
+
+.contactRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-4;
+  margin-top: $space-4;
+}
+
+.contactLink {
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-sm;
+  color: var(--pf-accent);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+.certList,
+.plainList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.certItem {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-3 0;
+  border-bottom: 1px solid var(--pf-surface);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: $radius-full;
+  background: var(--pf-muted);
+  flex-shrink: 0;
+}
+
+.completed {
+  background: var(--pf-accent);
+}
+
+.inProgress {
+  background: var(--pf-text);
+}
+
+.planned {
+  background: var(--pf-muted);
+}
+
+.certCode {
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  color: var(--pf-muted);
+  min-width: 5rem;
+}
+
+.certName {
+  flex: 1;
+  font-size: $font-size-base;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--pf-muted);
+  }
+}
+
+.certStatus {
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pf-muted);
+}
+
+.projectList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-10;
+}
+
+.projectImage {
+  width: 100%;
+  border-radius: $radius-md;
+  margin-bottom: $space-4;
+}
+
+.projectHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: $space-4;
+  margin-bottom: $space-3;
+}
+
+.projectTitle {
+  font-family: var(--pf-font-display);
+  font-size: $font-size-xl;
+  font-weight: $font-weight-normal;
+  margin: 0;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin-top: $space-4;
+}
+
+.projectTag {
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--pf-surface);
+  color: var(--pf-muted);
+}
+
+.projectLinks {
+  display: flex;
+  gap: $space-4;
+  margin-top: $space-4;
+
+  a {
+    font-family: var(--pf-font-mono);
+    font-size: $font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--pf-accent);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+  }
+}
+
+.expList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-8;
+}
+
+.expHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: $space-4;
+  margin-bottom: $space-2;
+}
+
+.expRole {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+}
+
+.expCompany {
+  color: var(--pf-muted);
+  font-weight: $font-weight-normal;
+}
+
+.expDates {
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  color: var(--pf-muted);
+  white-space: nowrap;
+}
+
+.bullets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bullet {
+  position: relative;
+  padding-left: $space-4;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  color: var(--pf-muted);
+
+  &::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+  }
+}
+
+.skillGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: $space-8;
+}
+
+.skillLabel {
+  display: block;
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: $space-2;
+  margin-bottom: $space-3;
+  border-bottom: 2px solid var(--pf-text);
+}
+
+.skillItems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.skillItem {
+  font-size: $font-size-sm;
+  color: var(--pf-muted);
+}
+
+.plainListItem {
+  padding: $space-2 0;
+  font-size: $font-size-base;
+  border-bottom: 1px solid var(--pf-surface);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  flex-wrap: wrap;
+  padding-top: $space-12;
+  margin-top: $space-8;
+  border-top: 1px solid var(--pf-surface);
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-5;
+}
+
+.footerLink {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pf-text);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--pf-accent);
+  }
+}
+
+.footerIcon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.footerYear {
+  font-family: var(--pf-font-mono);
+  font-size: $font-size-xs;
+  color: var(--pf-muted);
+}

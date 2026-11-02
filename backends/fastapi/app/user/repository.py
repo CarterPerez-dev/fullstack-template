@@ -4,12 +4,13 @@ repository.py
 """
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import UserRole
 from .User import User
 from core.base_repository import BaseRepository
+from core.exceptions import InvalidCredentials
 
 
 class UserRepository(BaseRepository[User]):
@@ -86,13 +87,24 @@ class UserRepository(BaseRepository[User]):
         session: AsyncSession,
         user: User,
         hashed_password: str,
+        *,
+        invalidate_sessions: bool = True,
     ) -> User:
         """
-        Update user password and increment token version
+        Replace the verified password without overwriting a concurrent change.
         """
-        user.hashed_password = hashed_password
-        user.increment_token_version()
-        await session.flush()
+        result = await session.execute(
+            update(User)
+            .where(User.id == user.id, User.hashed_password == user.hashed_password)
+            .values(
+                hashed_password = hashed_password,
+                token_version = User.token_version + int(invalidate_sessions),
+            )
+            .returning(User.id)
+            .execution_options(synchronize_session = False)
+        )
+        if result.scalar_one_or_none() is None:
+            raise InvalidCredentials()
         await session.refresh(user)
         return user
 
@@ -105,7 +117,10 @@ class UserRepository(BaseRepository[User]):
         """
         Invalidate all user tokens
         """
-        user.increment_token_version()
-        await session.flush()
+        await session.execute(
+            update(User).where(User.id == user.id)
+            .values(token_version = User.token_version + 1)
+            .execution_options(synchronize_session = False)
+        )
         await session.refresh(user)
         return user

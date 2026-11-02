@@ -32,9 +32,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     Application lifespan handler for startup and shutdown
     """
     configure_logging()
-    sessionmanager.init(str(settings.DATABASE_URL))
-    yield
-    await sessionmanager.close()
+    try:
+        sessionmanager.init(str(settings.DATABASE_URL))
+        yield
+    finally:
+        await sessionmanager.close()
 
 
 OPENAPI_TAGS = [
@@ -79,7 +81,6 @@ def create_app() -> FastAPI:
             "url": settings.APP_LICENSE_URL,
         },
         openapi_tags = OPENAPI_TAGS,
-        openapi_version = "3.1.0",
         lifespan = lifespan,
         root_path = "/api",
         openapi_url = "/openapi.json",

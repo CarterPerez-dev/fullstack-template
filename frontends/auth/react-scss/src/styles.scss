@@ -8,6 +8,14 @@
 @forward 'styles/mixins';
 
 @use 'styles/reset';
+@use 'styles/tokens' as *;
+@use 'styles/fonts' as *;
+
+body {
+  font-family: $font-sans;
+  color: $color-text;
+  background-color: $color-bg;
+}
 
 #root {
   min-height: 100vh;

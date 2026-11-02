@@ -1,15 +1,7 @@
-node_modules
-build
-dist
+# ©AngelaMos | 2026
+# .dockerignore
 .git
-.gitignore
-*.md
-.env*
-.vscode
-.idea
-*.log
-npm-debug.log*
-pnpm-debug.log*
-.DS_Store
-coverage
-.nyc_output
+.env
+.env.*
+node_modules
+dist

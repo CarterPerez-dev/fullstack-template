@@ -4,11 +4,9 @@
 package auth
 
 import (
-	"encoding/json"
 	"errors"
 	"net"
 	"net/http"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -18,14 +16,16 @@ import (
 )
 
 type Handler struct {
-	service   *Service
-	validator *validator.Validate
+	service       *Service
+	validator     *validator.Validate
+	secureCookies bool
 }
 
-func NewHandler(service *Service) *Handler {
+func NewHandler(service *Service, secureCookies bool) *Handler {
 	return &Handler{
-		service:   service,
-		validator: validator.New(validator.WithRequiredStructEnabled()),
+		service:       service,
+		validator:     validator.New(validator.WithRequiredStructEnabled()),
+		secureCookies: secureCookies,
 	}
 }
 
@@ -52,8 +52,8 @@ func (h *Handler) RegisterRoutes(
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		core.BadRequest(w, "invalid request body")
+	if err := core.DecodeJSON(r, &req); err != nil {
+		core.JSONError(w, err)
 		return
 	}
 
@@ -67,6 +67,9 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.service.Login(r.Context(), req, userAgent, ipAddress)
 	if err != nil {
+		if writePasswordCapacityError(w, err) {
+			return
+		}
 		if errors.Is(err, ErrInvalidCredentials) {
 			core.JSONError(
 				w,
@@ -78,13 +81,14 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.setBrowserSession(w, r, resp)
 	core.OK(w, resp)
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		core.BadRequest(w, "invalid request body")
+	if err := core.DecodeJSON(r, &req); err != nil {
+		core.JSONError(w, err)
 		return
 	}
 
@@ -98,6 +102,9 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.service.Register(r.Context(), req, userAgent, ipAddress)
 	if err != nil {
+		if writePasswordCapacityError(w, err) {
+			return
+		}
 		if errors.Is(err, ErrEmailExists) {
 			core.JSONError(w, core.DuplicateError("email"))
 			return
@@ -106,13 +113,18 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.setBrowserSession(w, r, resp)
 	core.Created(w, resp)
 }
 
 func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
-	var req RefreshRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		core.BadRequest(w, "invalid request body")
+	req, err := readRefreshRequest(r)
+	if err != nil {
+		if core.GetAppError(err).StatusCode == http.StatusRequestEntityTooLarge {
+			core.JSONError(w, err)
+			return
+		}
+		core.Unauthorized(w, "refresh token required")
 		return
 	}
 
@@ -156,6 +168,7 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.setBrowserSession(w, r, resp)
 	core.OK(w, resp)
 }
 
@@ -166,9 +179,13 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req RefreshRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		core.BadRequest(w, "invalid request body")
+	req, err := readRefreshRequest(r)
+	if err != nil {
+		if core.GetAppError(err).StatusCode == http.StatusRequestEntityTooLarge {
+			core.JSONError(w, err)
+			return
+		}
+		core.Unauthorized(w, "refresh token required")
 		return
 	}
 
@@ -181,6 +198,7 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.clearBrowserSession(w)
 	core.NoContent(w)
 }
 
@@ -196,6 +214,7 @@ func (h *Handler) LogoutAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.clearBrowserSession(w)
 	core.NoContent(w)
 }
 
@@ -252,8 +271,8 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req ChangePasswordRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		core.BadRequest(w, "invalid request body")
+	if err := core.DecodeJSON(r, &req); err != nil {
+		core.JSONError(w, err)
 		return
 	}
 
@@ -263,6 +282,9 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.ChangePassword(r.Context(), userID, req.CurrentPassword, req.NewPassword); err != nil {
+		if writePasswordCapacityError(w, err) {
+			return
+		}
 		if errors.Is(err, ErrInvalidCredentials) {
 			core.JSONError(
 				w,
@@ -298,19 +320,24 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 }
 
 func extractIPAddress(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		ips := strings.Split(xff, ",")
-		return strings.TrimSpace(ips[len(ips)-1])
-	}
-
-	if xri := r.Header.Get("X-Real-IP"); xri != "" {
-		return xri
-	}
-
 	ip, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr
 	}
 
 	return ip
+}
+
+func writePasswordCapacityError(w http.ResponseWriter, err error) bool {
+	if !errors.Is(err, core.ErrPasswordCapacity) {
+		return false
+	}
+	w.Header().Set("Retry-After", "1")
+	core.JSONError(w, core.NewAppError(
+		err,
+		"authentication is temporarily busy; retry shortly",
+		http.StatusServiceUnavailable,
+		"AUTH_BUSY",
+	))
+	return true
 }

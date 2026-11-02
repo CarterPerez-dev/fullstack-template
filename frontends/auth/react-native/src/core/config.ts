@@ -4,9 +4,7 @@
 // ===================
 
 export const APP_CONFIG = {
-  DEV_IP: '192.168.1.167',
-  DEV_PORT: '5426',
-  PROD_API_URL: 'https://api.example.com',
+  API_URL: process.env.EXPO_PUBLIC_API_URL,
 
   KEYCHAIN_SERVICE: 'com.yourcompany.app.auth',
   AUTH_STORAGE_KEY: 'app-auth',
@@ -18,10 +16,10 @@ const API_VERSION = 'v1'
 
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: `/${API_VERSION}/auth/login`,
+    LOGIN: `/${API_VERSION}/auth/login-mobile`,
     REFRESH: `/${API_VERSION}/auth/refresh`,
     REFRESH_MOBILE: `/${API_VERSION}/auth/refresh-mobile`,
-    LOGOUT: `/${API_VERSION}/auth/logout`,
+    LOGOUT: `/${API_VERSION}/auth/logout-mobile`,
     LOGOUT_ALL: `/${API_VERSION}/auth/logout-all`,
     ME: `/${API_VERSION}/auth/me`,
     CHANGE_PASSWORD: `/${API_VERSION}/auth/change-password`,

@@ -20,8 +20,7 @@ export const userResponseSchema = z.object({
   updated_at: z.string().datetime().nullable(),
   email: z.string().email(),
   full_name: z.string().nullable(),
-  is_active: z.boolean(),
-  is_verified: z.boolean(),
+  tier: z.string(),
   role: z.nativeEnum(UserRole),
 })
 

@@ -1,36 +1,23 @@
-# AngelaMos | 2026
-# Dockerfile - Multi-stage distroless build
+# ©AngelaMos | 2026
+# Dockerfile
 
-# Build stage
-FROM golang:1.25-bookworm AS builder
-
+FROM golang:1.26.10-bookworm AS builder
 WORKDIR /build
-
-# Copy dependency files first for layer caching
 COPY go.mod go.sum ./
 RUN go mod download
-
-# Copy source code
 COPY . .
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /api ./cmd/api
+RUN install -d -m 700 -o 65532 -g 65532 /runtime-keys
 
-# Build binary
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app ./cmd/api
+FROM builder AS development
+CMD ["go", "run", "./cmd/api"]
 
-# Production stage - Distroless
-FROM gcr.io/distroless/static-debian12
-
-# Copy binary from builder
-COPY --from=builder /app /app
-
-# Copy migrations (embedded, but useful for debugging)
+FROM gcr.io/distroless/static-debian12:nonroot AS production
+COPY --from=builder /api /api
+COPY --from=builder /build/config.yaml /config.yaml
 COPY --from=builder /build/migrations /migrations
-
-# Copy keys if they exist (for JWT)
-COPY --from=builder /build/keys /keys
-
-# Run as non-root user
-USER nonroot:nonroot
-
+COPY --from=builder --chown=65532:65532 /runtime-keys /keys
+WORKDIR /
+USER 65532:65532
 EXPOSE 8080
-
-ENTRYPOINT ["/app"]
+ENTRYPOINT ["/api"]

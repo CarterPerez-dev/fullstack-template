@@ -3,10 +3,10 @@
 enums.py
 """
 
-from enum import Enum
+from enum import StrEnum
 
 
-class Environment(str, Enum):
+class Environment(StrEnum):
     """
     Application environment
     """
@@ -15,14 +15,14 @@ class Environment(str, Enum):
     PRODUCTION = "production"
 
 
-class TokenType(str, Enum):
+class TokenType(StrEnum):
     """
     JWT token types
     """
     ACCESS = "access"
 
 
-class HealthStatus(str, Enum):
+class HealthStatus(StrEnum):
     """
     Health check status values
     """

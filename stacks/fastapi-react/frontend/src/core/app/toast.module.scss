@@ -2,15 +2,3 @@
 // © AngelaMos | 2026
 // toast.module.scss
 // ===================
-
-@use '../../styles' as *;
-
-:global([data-sonner-toaster]) {
-  font-family: $font-mono !important;
-}
-
-:global([data-sonner-toast]) {
-  border-radius: 0 !important;
-  font-size: $font-size-xs !important;
-  letter-spacing: $tracking-wide !important;
-}

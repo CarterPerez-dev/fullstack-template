@@ -1,5 +1,5 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // styles.scss
 // ===================
 
@@ -11,19 +11,21 @@
 @use 'styles/tokens' as *;
 @use 'styles/fonts' as *;
 
+body {
+  font-family: $font-sans;
+  color: $color-text;
+  background-color: $color-bg;
+}
+
 #root {
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: $bg-default;
 }
 
 .app {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: $bg-default;
-  color: $text-default;
-  font-family: $font-sans;
 }

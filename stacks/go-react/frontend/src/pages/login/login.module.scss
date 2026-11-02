@@ -1,171 +1,79 @@
 // ===================
-// © AngelaMos | 2025
+// © AngelaMos | 2026
 // login.module.scss
 // ===================
 
-@use '@/styles' as *;
-
 .page {
-  min-height: 100vh;
-  min-height: 100dvh;
-  @include flex-center;
-  background-color: $bg-default;
-  background-image: radial-gradient(
-    circle,
-    $bg-page 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
-  padding: $space-4;
+  width: min(100%, 30rem);
+  margin-inline: auto;
+  padding: clamp(2rem, 7vh, 5rem) 1.5rem;
 }
 
-.card {
-  width: 100%;
-  max-width: 400px;
-  background-color: $black;
-  background-image: radial-gradient(
-    circle,
-    $bg-card 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
-  border: 1px solid $border-default;
-  border-radius: $radius-lg;
-  padding: $space-8;
-}
-
-.header {
-  margin-bottom: $space-6;
+.header,
+.panel {
+  margin-bottom: 2rem;
 }
 
 .title {
-  font-size: $font-size-2xl;
-  font-weight: $font-weight-semibold;
-  color: $white;
-  margin-bottom: $space-2;
+  margin-block: 1rem 0.5rem;
+  font-size: 1.75rem;
+  line-height: 1.3;
 }
 
-.subtitle {
-  font-size: $font-size-sm;
-  color: $text-light;
-}
-
-.form {
-  @include flex-column;
-  gap: $space-5;
+.form,
+.field {
+  display: grid;
+  gap: 1.25rem;
 }
 
 .field {
-  @include flex-column;
-  gap: $space-2;
-}
-
-.label {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $white;
-}
-
-.input {
-  width: 100%;
-  height: 48px;
-  padding: 0 $space-4;
-  background-color: transparent;
-  border: 1px solid $border-default;
-  border-radius: $radius-md;
-  font-size: $font-size-base;
-  color: $white;
-  @include transition-fast;
-
-  &::placeholder {
-    color: $text-muted;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: $border-strong;
-  }
-
-  &[aria-invalid='true'] {
-    border-color: $error-default;
-  }
+  gap: 0.5rem;
 }
 
 .inputWrapper {
-  position: relative;
-  width: 100%;
+  display: flex;
+  gap: 0.5rem;
 }
 
+.input {
+  min-width: 0;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #a1a1aa;
+  border-radius: 0.25rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+
+.submit,
 .eyeButton {
-  position: absolute;
-  right: $space-3;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: $text-muted;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.25rem;
+  background: #fff;
+  color: inherit;
   cursor: pointer;
-  padding: $space-1;
-  @include transition-fast;
-
-  &:hover {
-    color: $white;
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
 }
 
-.error {
-  font-size: $font-size-xs;
-  color: $error-default;
-}
-
-.submit {
-  width: 100%;
-  height: 48px;
-  margin-top: $space-2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: $white;
-  border: none;
-  border-radius: $radius-md;
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
-  color: $black;
-  cursor: pointer;
-  @include transition-fast;
-
-  @include hover {
-    filter: brightness(0.9);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 .footer {
-  margin-top: $space-6;
-  text-align: center;
-  font-size: $font-size-sm;
-  color: $text-light;
+  margin-top: 1.5rem;
 }
 
-.link {
-  color: $text-default;
+.page a {
   text-decoration: underline;
-  text-underline-offset: 4px;
-  @include transition-fast;
+  text-underline-offset: 0.2em;
+}
 
-  @include hover {
-    color: $text-light;
-  }
+.page :focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }

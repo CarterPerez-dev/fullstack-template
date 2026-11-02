@@ -41,7 +41,7 @@ oauth2_scheme_optional = OAuth2PasswordBearer(
     auto_error = False,
 )
 
-DBSession = Annotated[AsyncSession, Depends(get_db_session)]
+DBSession = Annotated[AsyncSession, Depends(get_db_session, scope = "function")]
 
 
 async def get_current_user(
@@ -135,11 +135,8 @@ OptionalUser = Annotated["User | None", Depends(get_optional_user)]
 
 def get_client_ip(request: Request) -> str:
     """
-    Extract client IP considering proxy headers
+    Use the address established by the ASGI server's trusted proxy policy
     """
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
 
 

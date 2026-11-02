@@ -1,29 +1,13 @@
-// ===================
-// © AngelaMos | 2025
-// useAdmin.ts
-// ===================
+/**
+ * ©AngelaMos | 2026
+ * useAdmin.ts
+ */
 
-import {
-  type UseMutationResult,
-  type UseQueryResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import {
-  type AdminUserCreateRequest,
-  type AdminUserUpdateRequest,
-  isValidUserListResponse,
-  isValidUserResponse,
-  USER_ERROR_MESSAGES,
-  USER_SUCCESS_MESSAGES,
-  type UserListResponse,
-  type UserResponse,
-  UserResponseError,
-} from '@/api/types'
+import { userListResponseSchema, userResponseSchema } from '@/api/types'
 import { API_ENDPOINTS, PAGINATION, QUERY_KEYS } from '@/config'
-import { apiClient, QUERY_STRATEGIES } from '@/core/api'
+import { apiClient } from '@/core/api'
 
 export const adminQueries = {
   all: () => QUERY_KEYS.ADMIN.ALL,
@@ -34,186 +18,57 @@ export const adminQueries = {
   },
 } as const
 
-interface UseAdminUsersParams {
-  page?: number
-  size?: number
-}
-
-const fetchAdminUsers = async (
-  page: number,
-  size: number
-): Promise<UserListResponse> => {
-  const response = await apiClient.get<unknown>(API_ENDPOINTS.ADMIN.USERS.LIST, {
-    params: { page, size },
-  })
-  const data: unknown = response.data
-
-  if (!isValidUserListResponse(data)) {
-    throw new UserResponseError(
-      USER_ERROR_MESSAGES.INVALID_USER_LIST_RESPONSE,
-      API_ENDPOINTS.ADMIN.USERS.LIST
-    )
-  }
-
-  return data
-}
-
-export const useAdminUsers = (
-  params: UseAdminUsersParams = {}
-): UseQueryResult<UserListResponse, Error> => {
+export function useAdminUsers(params: { page?: number; size?: number } = {}) {
   const page = params.page ?? PAGINATION.DEFAULT_PAGE
   const size = params.size ?? PAGINATION.DEFAULT_SIZE
-
   return useQuery({
     queryKey: adminQueries.users.list(page, size),
-    queryFn: () => fetchAdminUsers(page, size),
-    ...QUERY_STRATEGIES.standard,
+    queryFn: async () => {
+      const response = await apiClient.get(API_ENDPOINTS.ADMIN.USERS.LIST, {
+        params: { page, page_size: size },
+      })
+      return userListResponseSchema.parse(response.data)
+    },
   })
 }
 
-const fetchAdminUserById = async (id: string): Promise<UserResponse> => {
-  const response = await apiClient.get<unknown>(
-    API_ENDPOINTS.ADMIN.USERS.BY_ID(id)
-  )
-  const data: unknown = response.data
-
-  if (!isValidUserResponse(data)) {
-    throw new UserResponseError(
-      USER_ERROR_MESSAGES.INVALID_USER_RESPONSE,
-      API_ENDPOINTS.ADMIN.USERS.BY_ID(id)
-    )
-  }
-
-  return data
-}
-
-export const useAdminUser = (id: string): UseQueryResult<UserResponse, Error> => {
+export function useAdminUser(id: string) {
   return useQuery({
     queryKey: adminQueries.users.byId(id),
-    queryFn: () => fetchAdminUserById(id),
+    queryFn: async () => {
+      const response = await apiClient.get(API_ENDPOINTS.ADMIN.USERS.BY_ID(id))
+      return userResponseSchema.parse(response.data)
+    },
     enabled: id.length > 0,
-    ...QUERY_STRATEGIES.standard,
   })
 }
 
-const performAdminCreateUser = async (
-  data: AdminUserCreateRequest
-): Promise<UserResponse> => {
-  const response = await apiClient.post<unknown>(
-    API_ENDPOINTS.ADMIN.USERS.CREATE,
-    data
-  )
-  const responseData: unknown = response.data
-
-  if (!isValidUserResponse(responseData)) {
-    throw new UserResponseError(
-      USER_ERROR_MESSAGES.INVALID_USER_RESPONSE,
-      API_ENDPOINTS.ADMIN.USERS.CREATE
-    )
-  }
-
-  return responseData
-}
-
-export const useAdminCreateUser = (): UseMutationResult<
-  UserResponse,
-  Error,
-  AdminUserCreateRequest
-> => {
+export function useAdminUpdateUser() {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: performAdminCreateUser,
-    onSuccess: async (): Promise<void> => {
-      await queryClient.invalidateQueries({ queryKey: adminQueries.users.all() })
-
-      toast.success(USER_SUCCESS_MESSAGES.CREATED)
+    mutationFn: async (params: { id: string; role: 'user' | 'admin' }) => {
+      const response = await apiClient.put(
+        `${API_ENDPOINTS.ADMIN.USERS.UPDATE(params.id)}/role`,
+        { role: params.role }
+      )
+      return userResponseSchema.parse(response.data)
     },
-    onError: (error: Error): void => {
-      const message =
-        error instanceof UserResponseError
-          ? error.message
-          : USER_ERROR_MESSAGES.FAILED_TO_CREATE
-      toast.error(message)
-    },
+    onSuccess: () => toast.success('Role updated'),
+    onError: (error: Error) => toast.error(error.message),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: adminQueries.all() }),
   })
 }
 
-interface AdminUpdateUserParams {
-  id: string
-  data: AdminUserUpdateRequest
-}
-
-const performAdminUpdateUser = async (
-  params: AdminUpdateUserParams
-): Promise<UserResponse> => {
-  const response = await apiClient.patch<unknown>(
-    API_ENDPOINTS.ADMIN.USERS.UPDATE(params.id),
-    params.data
-  )
-  const responseData: unknown = response.data
-
-  if (!isValidUserResponse(responseData)) {
-    throw new UserResponseError(
-      USER_ERROR_MESSAGES.INVALID_USER_RESPONSE,
-      API_ENDPOINTS.ADMIN.USERS.UPDATE(params.id)
-    )
-  }
-
-  return responseData
-}
-
-export const useAdminUpdateUser = (): UseMutationResult<
-  UserResponse,
-  Error,
-  AdminUpdateUserParams
-> => {
+export function useAdminDeleteUser() {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: performAdminUpdateUser,
-    onSuccess: async (
-      data: UserResponse,
-      variables: AdminUpdateUserParams
-    ): Promise<void> => {
-      queryClient.setQueryData(adminQueries.users.byId(variables.id), data)
-
-      await queryClient.invalidateQueries({ queryKey: adminQueries.users.all() })
-
-      toast.success(USER_SUCCESS_MESSAGES.UPDATED)
+    mutationFn: async (id: string) => {
+      await apiClient.delete(API_ENDPOINTS.ADMIN.USERS.DELETE(id))
     },
-    onError: (error: Error): void => {
-      const message =
-        error instanceof UserResponseError
-          ? error.message
-          : USER_ERROR_MESSAGES.FAILED_TO_UPDATE
-      toast.error(message)
-    },
-  })
-}
-
-const performAdminDeleteUser = async (id: string): Promise<void> => {
-  await apiClient.delete(API_ENDPOINTS.ADMIN.USERS.DELETE(id))
-}
-
-export const useAdminDeleteUser = (): UseMutationResult<void, Error, string> => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: performAdminDeleteUser,
-    onSuccess: async (_, id: string): Promise<void> => {
-      queryClient.removeQueries({ queryKey: adminQueries.users.byId(id) })
-
-      await queryClient.invalidateQueries({ queryKey: adminQueries.users.all() })
-
-      toast.success(USER_SUCCESS_MESSAGES.DELETED)
-    },
-    onError: (error: Error): void => {
-      const message =
-        error instanceof UserResponseError
-          ? error.message
-          : USER_ERROR_MESSAGES.FAILED_TO_DELETE
-      toast.error(message)
-    },
+    onSuccess: () => toast.success('User deleted'),
+    onError: (error: Error) => toast.error(error.message),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: adminQueries.all() }),
   })
 }

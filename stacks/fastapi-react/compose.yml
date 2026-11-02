@@ -6,7 +6,7 @@
 # For Cloudflare tunnel: docker compose -f compose.yml -f cloudflared.compose.yml up
 # =============================================================================
 
-name: ${APP_NAME:-fastapi-react}
+name: fastapi-react
 
 services:
   nginx:
@@ -16,9 +16,9 @@ services:
       args:
         - VITE_API_URL=${VITE_API_URL:-/api}
         - VITE_APP_TITLE=${VITE_APP_TITLE:-My App}
-    container_name: ${APP_NAME:-fastapi-react}-nginx
+    container_name: fastapi-react-nginx
     ports:
-      - "${NGINX_HOST_PORT:-8426}:80"
+      - "${NGINX_HOST_PORT:-48426}:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -33,15 +33,15 @@ services:
         reservations:
           cpus: '0.25'
           memory: 64M
-    restart: unless-stopped
+    restart: always
 
   backend:
     build:
       context: ./backend
       dockerfile: ../infra/docker/fastapi.prod
-    container_name: ${APP_NAME:-fastapi-react}-backend
+    container_name: fastapi-react-backend
     ports:
-      - "${BACKEND_HOST_PORT:-5426}:8000"
+      - "${BACKEND_HOST_PORT:-45426}:8000"
     expose:
       - "8000"
     env_file:
@@ -71,15 +71,15 @@ services:
       timeout: 5s
       retries: 3
       start_period: 40s
-    restart: unless-stopped
+    restart: always
 
   db:
     image: postgres:18-alpine
-    container_name: ${APP_NAME:-fastapi-react}-db
+    container_name: fastapi-react-db
     ports:
-      - "${POSTGRES_HOST_PORT:-4426}:5432"
+      - "${POSTGRES_HOST_PORT:-44426}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
@@ -100,16 +100,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    restart: unless-stopped
+    restart: always
 
   redis:
     image: redis:7-alpine
-    container_name: ${APP_NAME:-fastapi-react}-redis
+    container_name: fastapi-react-redis
     ports:
-      - "${REDIS_HOST_PORT:-6426}:6379"
+      - "${REDIS_HOST_PORT:-46426}:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD}"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
     networks:
       - backend
     deploy:
@@ -125,7 +127,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    restart: always
 
 networks:
   frontend:

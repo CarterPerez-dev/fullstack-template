@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "app"))
 
 import hashlib
+import os
 import secrets
 from datetime import (
     UTC,
@@ -30,7 +31,8 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
     create_async_engine,
 )
-from sqlalchemy.pool import StaticPool
+from sqlalchemy import text
+from sqlalchemy.pool import NullPool, StaticPool
 
 from core.security import (
     hash_password,
@@ -50,6 +52,26 @@ async def test_engine():
     Session scoped async engine with in memory SQLite
     StaticPool keeps single connection so DB persists
     """
+    url = os.environ.get("TEST_POSTGRES_URL")
+    if url:
+        schema = f"template_test_{uuid4().hex}"
+        admin = create_async_engine(url, poolclass = NullPool)
+        async with admin.begin() as conn:
+            await conn.execute(text(f'CREATE SCHEMA "{schema}"'))
+        engine = create_async_engine(
+            url, poolclass = NullPool,
+            connect_args = {"server_settings": {"search_path": schema}},
+        )
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            yield engine
+        finally:
+            await engine.dispose()
+            async with admin.begin() as conn:
+                await conn.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
+            await admin.dispose()
+        return
     engine = create_async_engine(
         "sqlite+aiosqlite:///:memory:",
         poolclass = StaticPool,

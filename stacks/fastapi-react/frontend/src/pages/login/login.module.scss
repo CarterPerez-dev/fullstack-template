@@ -3,176 +3,77 @@
 // login.module.scss
 // ===================
 
-@use '../../styles' as *;
-
 .page {
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: $bg-default;
-  color: $text-default;
-  @include flex-column-center;
-  padding: $space-6;
+  width: min(100%, 30rem);
+  margin-inline: auto;
+  padding: clamp(2rem, 7vh, 5rem) 1.5rem;
 }
 
-.card {
-  width: 100%;
-  max-width: 380px;
-  border-top: 3px solid $accent-default;
-  background: $bg-alternative;
-  border-left: 1px solid $border-default;
-  border-right: 1px solid $border-default;
-  border-bottom: 1px solid $border-default;
-}
-
-.header {
-  padding: $space-8 $space-6 $space-4;
-}
-
-.backLink {
-  font-family: $font-mono;
-  font-size: $font-size-2xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-wide;
-  color: $text-lighter;
-  text-decoration: none;
-  @include transition-fast;
-  display: inline-block;
-  margin-bottom: $space-4;
-
-  @include hover {
-    color: $accent-default;
-  }
-}
-
-.subtitle {
-  font-family: $font-mono;
-  font-size: $font-size-2xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-widest;
-  color: $text-lighter;
-  display: block;
+.header,
+.panel {
+  margin-bottom: 2rem;
 }
 
 .title {
-  font-weight: $font-weight-black;
-  font-size: $font-size-4xl;
-  line-height: $line-height-none;
-  letter-spacing: $tracking-tight;
-  margin-top: $space-3;
+  margin-block: 1rem 0.5rem;
+  font-size: 1.75rem;
+  line-height: 1.3;
 }
 
-.form {
-  @include flex-column;
-  gap: $space-5;
-  padding: $space-2 $space-6 $space-6;
+.form,
+.field {
+  display: grid;
+  gap: 1.25rem;
 }
 
 .field {
-  @include flex-column;
-  gap: $space-1-5;
-}
-
-.label {
-  font-family: $font-mono;
-  font-size: $font-size-2xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-widest;
-  color: $text-lighter;
+  gap: 0.5rem;
 }
 
 .inputWrapper {
-  position: relative;
   display: flex;
-  align-items: center;
+  gap: 0.5rem;
 }
 
 .input {
+  min-width: 0;
   width: 100%;
-  padding: $space-2-5 0;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid $border-strong;
-  color: $text-default;
-  font-size: $font-size-sm;
-  outline: none;
-  @include transition-fast;
-  border-radius: 0;
-
-  &::placeholder {
-    color: $text-muted;
-  }
-
-  &:focus {
-    border-bottom-color: $accent-default;
-  }
+  min-height: 2.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #a1a1aa;
+  border-radius: 0.25rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
 }
 
-.inputWrapper .input {
-  padding-right: $space-10;
-}
-
+.submit,
 .eyeButton {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  color: $text-lighter;
-  @include transition-fast;
-  display: flex;
-  align-items: center;
-
-  @include hover {
-    color: $text-default;
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.25rem;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
 }
 
-.submit {
-  width: 100%;
-  padding: $space-3 $space-4;
-  margin-top: $space-2;
-  background: $accent-default;
-  color: $bg-default;
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  font-weight: $font-weight-medium;
-  text-transform: uppercase;
-  letter-spacing: $tracking-wider;
-  border: 1px solid $accent-default;
-  @include transition-fast;
-
-  @include hover {
-    background: $accent-hover;
-    border-color: $accent-hover;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 .footer {
-  padding: $space-4 $space-6;
-  border-top: 1px solid $border-muted;
-  font-family: $font-mono;
-  font-size: $font-size-2xs;
-  text-transform: uppercase;
-  letter-spacing: $tracking-wide;
-  color: $text-lighter;
-  text-align: center;
+  margin-top: 1.5rem;
 }
 
-.link {
-  color: $accent-default;
-  text-decoration: none;
-  @include transition-fast;
+.page a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
 
-  @include hover {
-    color: $accent-hover;
-  }
+.page :focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }

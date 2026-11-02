@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .RefreshToken import RefreshToken
 from core.base_repository import BaseRepository
+from user.User import User
 
 
 class RefreshTokenRepository(BaseRepository[RefreshToken]):
@@ -26,12 +27,24 @@ class RefreshTokenRepository(BaseRepository[RefreshToken]):
         token_hash: str,
     ) -> RefreshToken | None:
         """
-        Get refresh token by its hash
+        Serialize refresh and revocation for the token's user
         """
+        user_id = await session.scalar(
+            select(RefreshToken.user_id).where(
+                RefreshToken.token_hash == token_hash
+            )
+        )
+        if user_id is None:
+            return None
+        await session.execute(
+            select(User).where(User.id == user_id).with_for_update()
+            .execution_options(populate_existing = True)
+        )
         result = await session.execute(
             select(RefreshToken).where(
                 RefreshToken.token_hash == token_hash
-            )
+            ).with_for_update()
+            .execution_options(populate_existing = True)
         )
         return result.scalars().first()
 
@@ -64,12 +77,14 @@ class RefreshTokenRepository(BaseRepository[RefreshToken]):
         device_id: str | None = None,
         device_name: str | None = None,
         ip_address: str | None = None,
+        token_version: int = 0,
     ) -> RefreshToken:
         """
         Create a new refresh token
         """
         token = RefreshToken(
             user_id = user_id,
+            token_version = token_version,
             token_hash = token_hash,
             family_id = family_id,
             expires_at = expires_at,

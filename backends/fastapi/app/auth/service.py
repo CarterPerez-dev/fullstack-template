@@ -68,7 +68,8 @@ class AuthService:
             await UserRepository.update_password(
                 self.session,
                 user,
-                new_hash
+                new_hash,
+                invalidate_sessions = False,
             )
 
         access_token = create_access_token(user.id, user.token_version)
@@ -81,6 +82,7 @@ class AuthService:
             user_id = user.id,
             token_hash = token_hash,
             family_id = family_id,
+            token_version = user.token_version,
             expires_at = expires_at,
             device_id = device_id,
             device_name = device_name,
@@ -125,7 +127,7 @@ class AuthService:
         """
         Refresh access token using refresh token
 
-        Implements token rotation with replay attack detection
+        Own the rotation transaction, including persisted replay revocation
         """
         token_hash = hash_token(refresh_token)
         stored_token = await RefreshTokenRepository.get_by_hash(
@@ -141,6 +143,7 @@ class AuthService:
                 self.session,
                 stored_token.family_id
             )
+            await self.session.commit()
             raise TokenRevokedError()
 
         if stored_token.is_expired:
@@ -152,6 +155,9 @@ class AuthService:
         )
         if user is None or not user.is_active:
             raise TokenError(message = "User not found or inactive")
+
+        if stored_token.token_version != user.token_version:
+            raise TokenRevokedError()
 
         await RefreshTokenRepository.revoke_token(
             self.session,
@@ -169,12 +175,14 @@ class AuthService:
             user_id = user.id,
             token_hash = new_hash,
             family_id = stored_token.family_id,
+            token_version = user.token_version,
             expires_at = expires_at,
             device_id = device_id,
             device_name = device_name,
             ip_address = ip_address,
         )
 
+        await self.session.commit()
         return TokenResponse(access_token = access_token), new_raw_token
 
     async def login_mobile(
@@ -239,10 +247,10 @@ class AuthService:
             token_hash
         )
 
-        if stored_token and not stored_token.is_revoked:
-            await RefreshTokenRepository.revoke_token(
+        if stored_token:
+            await RefreshTokenRepository.revoke_family(
                 self.session,
-                stored_token
+                stored_token.family_id
             )
 
     async def logout_all(

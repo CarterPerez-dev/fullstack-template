@@ -3,7 +3,9 @@
 // protected-route.tsx
 // ===================
 
+import { useEffect } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { useCurrentUser } from '@/api/hooks/useAuth'
 import type { UserRole } from '@/api/types'
 import { ROUTES } from '@/config'
 import { useAuthStore } from '@/core/lib'
@@ -18,13 +20,19 @@ export function ProtectedRoute({
   redirectTo = ROUTES.LOGIN,
 }: ProtectedRouteProps): React.ReactElement {
   const location = useLocation()
-  const { isAuthenticated, isLoading, user } = useAuthStore()
+  const { isAuthenticated, isLoading, updateUser } = useAuthStore()
+  const currentUser = useCurrentUser()
+  const user = currentUser.data
 
-  if (isLoading) {
+  useEffect(() => {
+    if (user) updateUser(user)
+  }, [user, updateUser])
+
+  if (isLoading || (isAuthenticated && currentUser.isPending)) {
     return <div>Loading...</div>
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || currentUser.isError) {
     return (
       <Navigate
         to={redirectTo}
@@ -37,8 +45,7 @@ export function ProtectedRoute({
   if (
     allowedRoles !== undefined &&
     allowedRoles.length > 0 &&
-    user !== null &&
-    !allowedRoles.includes(user.role)
+    (user === undefined || !allowedRoles.includes(user.role))
   ) {
     return <Navigate to={ROUTES.UNAUTHORIZED} replace />
   }

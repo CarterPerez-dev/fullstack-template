@@ -30,9 +30,26 @@ const (
 
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to config file")
+	keyDirectory := flag.String("init-keys", "", "initialize signing keys in this directory")
+	healthcheck := flag.Bool("healthcheck", false, "check the local API readiness")
+	migrate := flag.Bool("migrate", false, "apply pending database migrations")
+	adminEmail := flag.String("create-admin", "", "create an administrator using a password from standard input")
 	flag.Parse()
 
-	if err := run(*configPath); err != nil {
+	var err error
+	switch {
+	case *keyDirectory != "":
+		err = initializeKeys(*keyDirectory)
+	case *healthcheck:
+		err = checkHealth()
+	case *migrate:
+		err = runMigrations(*configPath)
+	case *adminEmail != "":
+		err = createAdministrator(*configPath, *adminEmail)
+	default:
+		err = run(*configPath)
+	}
+	if err != nil {
 		slog.Error("application error", "error", err)
 		os.Exit(1)
 	}
@@ -106,7 +123,7 @@ func run(configPath string) error {
 
 	authRepo := auth.NewRepository(db.DB)
 	authSvc := auth.NewService(authRepo, jwtManager, userSvc, redis.Client)
-	authHandler := auth.NewHandler(authSvc)
+	authHandler := auth.NewHandler(authSvc, cfg.IsProduction())
 
 	healthHandler := health.NewHandler(db, redis)
 
@@ -143,7 +160,7 @@ func run(configPath string) error {
 
 	router.Get("/.well-known/jwks.json", jwtManager.GetJWKSHandler())
 
-	authenticator := middleware.Authenticator(jwtManager)
+	authenticator := middleware.Authenticator(authSvc)
 	adminOnly := middleware.RequireAdmin
 
 	router.Route("/v1", func(r chi.Router) {

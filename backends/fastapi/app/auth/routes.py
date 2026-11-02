@@ -156,6 +156,17 @@ async def logout(
     clear_refresh_cookie(response)
 
 
+@router.post("/logout-mobile", status_code = status.HTTP_204_NO_CONTENT)
+async def logout_mobile(
+    auth_service: AuthServiceDep,
+    data: RefreshTokenRequest,
+) -> None:
+    """
+    Revoke the refresh token held in device secure storage
+    """
+    await auth_service.logout(data.refresh_token)
+
+
 @router.post("/logout-all", responses = {**AUTH_401})
 async def logout_all(
     response: Response,

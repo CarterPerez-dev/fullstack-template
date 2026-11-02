@@ -3,8 +3,6 @@
 # justfile
 # =============================================================================
 
-set dotenv-load
-set export
 set shell := ["bash", "-uc"]
 set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
@@ -24,15 +22,15 @@ default:
 
 [group('dev')]
 start:
-    npx expo start
+    docker compose --env-file .env.development -f dev.compose.yml up --build
 
 [group('dev')]
 ios:
-    npx expo start --ios
+    docker compose --env-file .env.development -f dev.compose.yml up --build
 
 [group('dev')]
 clear:
-    npx expo start --clear
+    docker compose --env-file .env.development -f dev.compose.yml run --rm --service-ports metro pnpm exec expo start --clear --port 8081 --lan
 
 # =============================================================================
 # Linting and Formatting
@@ -40,15 +38,15 @@ clear:
 
 [group('lint')]
 lint:
-    npm run lint
+    pnpm lint
 
 [group('lint')]
 lint-fix:
-    npm run lint:fix
+    pnpm lint:fix
 
 [group('lint')]
 format:
-    npm run format
+    pnpm format
 
 # =============================================================================
 # Type Checking
@@ -56,11 +54,11 @@ format:
 
 [group('types')]
 typecheck:
-    npm run typecheck
+    pnpm typecheck
 
 [group('types')]
 tsc *ARGS:
-    npx tsc {{ARGS}}
+    pnpm exec tsc {{ARGS}}
 
 # =============================================================================
 # Quality
@@ -68,7 +66,7 @@ tsc *ARGS:
 
 [group('ci')]
 check:
-    npm run check
+    pnpm check
 
 [group('ci')]
 ci: lint typecheck
@@ -108,12 +106,12 @@ placeholders:
 
 [group('setup')]
 install:
-    npm install
+    pnpm install --frozen-lockfile
 
 [group('setup')]
 reinstall:
     rm -rf node_modules
-    npm install
+    pnpm install --frozen-lockfile
 
 # =============================================================================
 # Utilities

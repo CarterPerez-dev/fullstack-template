@@ -6,7 +6,7 @@
 # For Cloudflare tunnel: docker compose -f compose.yml -f cloudflared.compose.yml up
 # =============================================================================
 
-name: ${APP_NAME:-no-auth-template}
+name: no-auth-template
 
 services:
   nginx:
@@ -16,9 +16,9 @@ services:
       args:
         - VITE_API_URL=${VITE_API_URL:-/api}
         - VITE_APP_TITLE=${VITE_APP_TITLE:-My App}
-    container_name: ${APP_NAME:-no-auth-template}-nginx
+    container_name: no-auth-template-nginx
     ports:
-      - "${NGINX_HOST_PORT:-22784}:80"
+      - "${NGINX_HOST_PORT:-42784}:80"
     networks:
       - app
     deploy:

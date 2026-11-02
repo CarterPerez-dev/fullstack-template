@@ -57,11 +57,12 @@ export const useUser = (id: string): UseQueryResult<UserResponse, Error> => {
 const performRegister = async (
   data: UserCreateRequest
 ): Promise<UserResponse> => {
-  const response = await apiClient.post<unknown>(
-    API_ENDPOINTS.USERS.REGISTER,
-    data
-  )
-  const responseData: unknown = response.data
+  const response = await apiClient.post<unknown>(API_ENDPOINTS.USERS.REGISTER, {
+    email: data.email,
+    password: data.password,
+    name: data.full_name ?? '',
+  })
+  const responseData: unknown = (response.data as { user?: unknown }).user
 
   if (!isValidUserResponse(responseData)) {
     throw new UserResponseError(
@@ -96,7 +97,9 @@ export const useRegister = (): UseMutationResult<
 const performUpdateProfile = async (
   data: UserUpdateRequest
 ): Promise<UserResponse> => {
-  const response = await apiClient.patch<unknown>(API_ENDPOINTS.USERS.ME, data)
+  const response = await apiClient.put<unknown>(API_ENDPOINTS.USERS.ME, {
+    name: data.full_name,
+  })
   const responseData: unknown = response.data
 
   if (!isValidUserResponse(responseData)) {

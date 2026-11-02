@@ -1,0 +1,19 @@
+# ©AngelaMos | 2026
+# .gitignore
+
+.env
+.env.*
+!.env.example
+!.env.*.example
+node_modules/
+.pnpm-store/
+.vite/
+dist/
+dist-ssr/
+*.tsbuildinfo
+*.log
+bin/
+tmp/
+*.pem
+*.key
+.DS_Store

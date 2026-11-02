@@ -1,0 +1,21 @@
+# ©AngelaMos | 2026
+# justfile
+
+default:
+    @just --list
+
+dev:
+    docker compose --env-file .env.development -f dev.compose.yml up -d --build
+
+prod:
+    docker compose --env-file .env -f compose.yml up -d --build
+
+down:
+    docker compose --env-file .env.development -f dev.compose.yml down
+
+prod-down:
+    docker compose --env-file .env -f compose.yml down
+
+check:
+    pnpm typecheck
+    pnpm lint

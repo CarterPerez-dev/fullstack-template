@@ -15,7 +15,7 @@ type LoginRequest struct {
 type RegisterRequest struct {
 	Email    string `json:"email"    validate:"required,email,max=255"`
 	Password string `json:"password" validate:"required,min=8,max=128"`
-	Name     string `json:"name"     validate:"required,min=1,max=100"`
+	Name     string `json:"name"     validate:"max=100"`
 }
 
 type RefreshRequest struct {
@@ -24,7 +24,7 @@ type RefreshRequest struct {
 
 type TokenResponse struct {
 	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
+	RefreshToken string    `json:"refresh_token,omitempty"`
 	TokenType    string    `json:"token_type"`
 	ExpiresIn    int       `json:"expires_in"`
 	ExpiresAt    time.Time `json:"expires_at"`

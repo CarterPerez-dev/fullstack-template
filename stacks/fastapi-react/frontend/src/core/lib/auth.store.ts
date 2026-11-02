@@ -11,6 +11,7 @@ import { STORAGE_KEYS } from '@/config'
 interface AuthState {
   user: UserResponse | null
   accessToken: string | null
+  sessionVersion: number
   isAuthenticated: boolean
   isLoading: boolean
 }
@@ -31,29 +32,32 @@ export const useAuthStore = create<AuthStore>()(
       (set) => ({
         user: null,
         accessToken: null,
+        sessionVersion: 0,
         isAuthenticated: false,
         isLoading: false,
 
         login: (user, accessToken) =>
           set(
-            {
+            (state) => ({
               user,
               accessToken,
+              sessionVersion: state.sessionVersion + 1,
               isAuthenticated: true,
               isLoading: false,
-            },
+            }),
             false,
             'auth/login'
           ),
 
         logout: () =>
           set(
-            {
+            (state) => ({
               user: null,
               accessToken: null,
+              sessionVersion: state.sessionVersion + 1,
               isAuthenticated: false,
               isLoading: false,
-            },
+            }),
             false,
             'auth/logout'
           ),

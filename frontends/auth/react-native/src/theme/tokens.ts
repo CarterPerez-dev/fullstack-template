@@ -7,37 +7,39 @@ import { createTokens } from 'tamagui'
 import { APP_CONFIG } from '@/core/config'
 
 export const tokens = createTokens({
+  // Neutral baseline: flat grayscale, no design identity. Keys are stable --
+  // redefine these values when you build the app's real look.
   color: {
-    bgDefault: '#121212',
-    bgAlternative: '#0f0f0f',
-    bgPage: '#1a1a1a',
-    bgCard: '#101010',
+    bgDefault: '#111111',
+    bgAlternative: '#0e0e0e',
+    bgPage: '#161616',
+    bgCard: '#131313',
 
     bgShellBase: '#151515',
-    bgShellDot: '#1d1d1d',
+    bgShellDot: '#1c1c1c',
 
     bgContentBase: '#0f0f0f',
-    bgContentDot: '#171717',
+    bgContentDot: '#161616',
 
-    bgSurface75: '#171717',
-    bgSurface100: '#181818',
-    bgSurface200: '#242424',
-    bgSurface300: '#292929',
+    bgSurface75: '#161616',
+    bgSurface100: '#1a1a1a',
+    bgSurface200: '#222222',
+    bgSurface300: '#2a2a2a',
 
     bgControl: '#1a1a1a',
-    bgSelection: '#313131',
-    bgOverlay: '#242424',
-    bgOverlayHover: '#2e2e2e',
+    bgSelection: '#303030',
+    bgOverlay: '#222222',
+    bgOverlayHover: '#2c2c2c',
 
-    borderMuted: '#242424',
-    borderDefault: '#2e2e2e',
+    borderMuted: '#222222',
+    borderDefault: '#2c2c2c',
     borderStrong: '#363636',
-    borderStronger: '#454545',
-    borderControl: '#393939',
+    borderStronger: '#444444',
+    borderControl: '#383838',
 
-    textDefault: '#fafafa',
-    textLight: '#b4b4b4',
-    textLighter: '#898989',
+    textDefault: '#f5f5f5',
+    textLight: '#b0b0b0',
+    textLighter: '#888888',
     textMuted: '#4d4d4d',
 
     white: '#ffffff',

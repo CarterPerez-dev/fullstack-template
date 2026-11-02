@@ -4,7 +4,6 @@
 package user
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -61,8 +60,8 @@ func (h *Handler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r.Context())
 
 	var req UpdateUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		core.BadRequest(w, "invalid request body")
+	if err := core.DecodeJSON(r, &req); err != nil {
+		core.JSONError(w, err)
 		return
 	}
 
@@ -164,8 +163,8 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 
 	var req UpdateUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		core.BadRequest(w, "invalid request body")
+	if err := core.DecodeJSON(r, &req); err != nil {
+		core.JSONError(w, err)
 		return
 	}
 
@@ -192,8 +191,8 @@ func (h *Handler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 
 	var req UpdateUserRoleRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		core.BadRequest(w, "invalid request body")
+	if err := core.DecodeJSON(r, &req); err != nil {
+		core.JSONError(w, err)
 		return
 	}
 
@@ -220,8 +219,8 @@ func (h *Handler) UpdateUserTier(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 
 	var req UpdateUserTierRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		core.BadRequest(w, "invalid request body")
+	if err := core.DecodeJSON(r, &req); err != nil {
+		core.JSONError(w, err)
 		return
 	}
 

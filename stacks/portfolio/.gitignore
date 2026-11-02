@@ -1,0 +1,33 @@
+# ©AngelaMos | 2026
+# .gitignore
+
+.env
+.env.*
+!.env.example
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+
+node_modules/
+.pnpm-store/
+.vite/
+dist/
+dist-ssr/
+uploads/
+*.tsbuildinfo
+
+*.log
+logs/
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

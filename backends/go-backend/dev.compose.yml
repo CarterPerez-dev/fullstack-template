@@ -1,17 +1,44 @@
 # AngelaMos | 2026
 # dev.compose.yml - Development compose
 
+name: go-api-dev
+
 services:
+  api:
+    extends:
+      file: compose.yml
+      service: api
+    build:
+      target: development
+    env_file: !override [.env.development]
+    environment:
+      ENVIRONMENT: development
+    ports: !override
+      - "${API_HOST_PORT:-48001}:8080"
+    volumes:
+      - .:/build
+
+  keys:
+    extends:
+      file: compose.yml
+      service: keys
+
+  migrate:
+    extends:
+      file: compose.yml
+      service: migrate
+    env_file: !override [.env.development]
+
   postgres:
     image: postgres:18-alpine
     ports:
-      - "5447:5432"
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-45447}:5432"
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
       POSTGRES_DB: app
     volumes:
-      - pgdata_dev:/var/lib/postgresql/data
+      - pgdata_dev:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -21,8 +48,10 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6022:6379"
-    command: redis-server --appendonly yes
+      - "127.0.0.1:${REDIS_HOST_PORT:-46022}:6379"
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD}"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
     volumes:
       - redisdata_dev:/data
     healthcheck:
@@ -32,14 +61,16 @@ services:
       retries: 5
 
   jaeger:
+    profiles: [observability]
     image: jaegertracing/all-in-one:1.54
     ports:
-      - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
+      - "127.0.0.1:${JAEGER_HOST_PORT:-46686}:16686"
+      - "127.0.0.1:${OTLP_GRPC_HOST_PORT:-44317}:4317"
+      - "127.0.0.1:${OTLP_HTTP_HOST_PORT:-44318}:4318"
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
 
 volumes:
   pgdata_dev:
   redisdata_dev:
+  signing_keys:

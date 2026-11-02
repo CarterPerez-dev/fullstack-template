@@ -5,6 +5,7 @@ node_modules/
 
 # Expo
 .expo/
+.tamagui/
 dist/
 web-build/
 expo-env.d.ts
@@ -31,7 +32,10 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+.env
+.env.*
+!.env.example
+!.env.*.example
 
 # typescript
 *.tsbuildinfo

@@ -6,12 +6,12 @@
 # Uses .env.development
 # =============================================================================
 
-name: ${APP_NAME:-no-auth-template}-dev
+name: no-auth-template-dev
 
 services:
   nginx:
     image: nginx:1.27-alpine
-    container_name: ${APP_NAME:-no-auth-template}-nginx-dev
+    container_name: no-auth-template-nginx-dev
     ports:
       - "${NGINX_HOST_PORT:-58495}:80"
     volumes:
@@ -28,13 +28,15 @@ services:
     build:
       context: ./react-scss
       dockerfile: ../infra/docker/vite.dev
-    container_name: ${APP_NAME:-no-auth-template}-frontend-dev
+    container_name: no-auth-template-frontend-dev
     ports:
-      - "${FRONTEND_HOST_PORT:-15723}:5173"
+      - "${FRONTEND_HOST_PORT:-45723}:5173"
     volumes:
       - ./react-scss:/app
       - frontend_modules:/app/node_modules
+    command: sh -c "pnpm install --frozen-lockfile && exec pnpm dev --host 0.0.0.0"
     environment:
+      - CI=true
       - VITE_API_URL=${VITE_API_URL:-/api}
       - VITE_APP_TITLE=${VITE_APP_TITLE:-My App}
     networks:
