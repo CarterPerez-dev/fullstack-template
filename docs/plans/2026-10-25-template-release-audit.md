@@ -5,18 +5,18 @@
 
 ## Outcome and scope
 
-The existing code has useful foundations, but the collection is not release-ready.
-The biggest weaknesses are broken contracts between components, incomplete
-authentication lifecycle enforcement, and a generator that depends on private
-working-tree state. A version upgrade alone will not fix these problems.
+The major authentication, generation, infrastructure, and dependency repairs are
+implemented. The recorded web-client and PostgreSQL backend checks pass. Public
+release work remains: commit the current changes, reconcile the remote, publish
+the release assets and installer, and accurately disclose integration gaps.
 
-Carter selected one coordinated release of all eight variants: `go`, `fastapi`,
+Carter initially selected one coordinated release of all eight variants: `go`, `fastapi`,
 `open`, `frontend`, `native`, `fastapi-stack`, `go-stack`, and `portfolio`.
 Keep the application architecture opinionated and the starter UI visually neutral.
 Carter owns the replacement favicons and the eventual public demo domain.
 
-This is an evolving evidence ledger, not a completed exhaustive audit or a claim
-that application services have passed runtime checks. The initial pass traced the
+This is an evolving evidence ledger, not a completed exhaustive audit. Passing
+runtime results apply only to the cases recorded below. The initial pass traced the
 installed generator, configuration, Docker entrypoints, both authentication
 implementations, the web authentication client, mobile API configuration, portfolio
 bootstrap/upload paths, and CI. Remaining source, native execution, dependency
@@ -25,6 +25,273 @@ advisories, and generated-project integration checks are release work.
 Project type: multi-stack application starter and distribution tool. Weight
 completeness 60 percent and code quality 40 percent: each advertised command must
 produce a project whose client, backend, environment, and deployment agree.
+
+## Current priority and status, November 8
+
+Carter stopped the repeated manual Docker verification loop and explicitly
+deprioritized React Native. Defer native Docker/device verification and do not
+keep requesting the full runtime matrix as the next assignment. Focus on the
+web/backend templates and public distribution. This changes the work priority;
+it does not convert unexecuted cases into passes or remove existing CI checks.
+
+The five web clients passed fresh installs, lint/types/builds, applicable refresh
+regressions, and their November 2 production dependency audits. All five backends
+passed real PostgreSQL verification, including 160 Python tests, all three Python
+migration chains, and both Go race suites without database skips. Their recorded
+manifest and lock hashes still match the checkout as of this status review.
+
+Seven generated Docker cases passed. Go development's memory/startup repair is
+implemented but lacks a completed rerun. The combined FastAPI/React, Go/React,
+and portfolio runtime cases and real browser authentication flows remain
+unverified. Native passed dependency checks, 25 regressions, and both exports;
+its Docker/device work is deferred. The latest resumed runtime report,
+`/home/yoshi/dev/.template-checks/template-runtime-check-7gq2bxsh/report.json`,
+is cancelled with no completed new cases and seven referenced earlier passes.
+
+The shared local/public generator, selective archives, installer, and neutral
+starter UI are implemented. The local command still points at this checkout.
+HEAD remains checkpoint `ab28a7c`, with the subsequent upgrade/runtime work
+uncommitted. Remote reconciliation, publishing, and hosted-installer verification
+remain unfinished in this execution record. The next useful work is a scoped
+commit and public distribution, with the remaining integration/source-review
+limits kept explicit rather than another blanket request for manual test runs.
+
+## Continuation status, November 2
+
+Checkpoint `ab28a7c` (`chore: checkpoint template release preparation`) records
+the accumulated source, generator, installer, audit, and dependency preparation.
+Its five local pre-commit hooks passed. It was committed locally on the existing
+branch; no push, tag, release, or website deployment occurred.
+
+Carter ran the dependency resolver in the normal terminal. All five Python
+projects now have package-manager-generated locks, including both minimal
+examples. The locks select FastAPI 0.162.0, Starlette 1.10.0, Pydantic 2.14.2,
+SQLAlchemy 2.0.55, python-multipart 0.0.33, PyJWT 2.15.1, and Uvicorn 0.54.0.
+The initial Python and client resolver logs are retained at
+`/tmp/template-dependency-resolution-c8tw181g` on this machine. Carter completed
+the web and Go follow-up runs. All five web logs finish without peer conflicts
+or deprecation warnings at `/tmp/template-dependency-resolution-r16hdrc_`.
+Both Go modules completed `go mod tidy` and `go mod verify`; their manifests
+and sums match, with logs at `/tmp/template-dependency-resolution-zw6b58pv`.
+
+The web resolution exposed a real peer constraint: `vite-tsconfig-paths` 5.1.4
+depends on `tsconfck`, which expects TypeScript 5, while the prepared manifests
+select TypeScript 6. All five web clients already have an explicit Vite `@` alias
+matching their TypeScript path mapping. The redundant plugin and its dependency
+were removed. The unused singular `react-icon` dependency was also removed; it
+pulled Babel runtime 5 and deprecated core-js 1. The used plural `react-icons`
+package remains. The follow-up resolution removed the redundant plugin, tsconfck,
+singular icon package, and core-js 1 from every web lock. All 13 project graphs
+resolved before the follow-up Zod and native SDK changes described below.
+
+The resolver now fails on peer-dependency conflicts, explains cached tool
+downloads, disables Corepack's interactive download prompt, and handles Ctrl-C
+with an exit status of 130 and a group-specific resume command. Short-lived
+process checks verified cooperative cancellation, forced cleanup of a process
+ignoring SIGINT, and clean CLI cancellation without a traceback. Ruff passes.
+Python and native resolution did not need repeating for these web/Go follow-ups.
+
+The normal-terminal fresh-install run completed all 13 projects. Its recovered
+report was `/tmp/template-dependency-check-rrb7ryfz/report.json`, completed at
+04:49:21 EST on November 2. All recorded manifest and lock hashes matched the
+checkout when the results were inspected, before the follow-up repairs.
+
+| Scope | Recovered result |
+| --- | --- |
+| Five Python projects | Passed locked Python 3.12 installations, applicable lint/types, all 30 HTTP/lifespan regressions, and locked production dependency audits. |
+| Two Go modules | Passed download/verification, vet, race tests, binary builds, and govulncheck with Go 1.26.10. Each suite skipped two PostgreSQL tests in this earlier run. The later PostgreSQL run below executes them and identifies the module-only advisory. |
+| Five web clients | Passed strict frozen installations, lint, SCSS lint, type/build checks, and all 44 authenticated-client cases. Every project then failed its production audit on Zod 4.1.13. |
+| Native SDK 54 baseline | Passed frozen installation, lint/types, 11 authentication cases, three storage-ordering cases, and iOS export. Its production audit reported 130 findings: two critical, 85 high, 36 moderate, and seven low. These counts include tooling/transitive paths and do not establish 130 exploitable application defects. |
+
+Seven projects passed; six stopped at their dependency audits. Two later Konsole
+SIGSEGV records occurred at 04:56:20 and 04:56:37 EST. The inspected stack includes
+terminal image repainting and Qt allocation. The checks had completed first;
+the crash trigger and any causal relationship to their output are unproven.
+
+All six client manifests now select Zod 4.6.6, the reviewed advisory's patched
+version. The native manifest prepares Expo 58.0.22 with React 19.3.0, RN 0.88.1,
+and the maintainer's coordinated native package tuple. Babel preset 58.0.23
+supplies Worklets integration; the redundant explicit Reanimated plugin is
+removed. Input refs derive their instance type from the React Native component,
+and unused Tamagui config/toast dependencies are removed. Tamagui 1 passes the
+SDK 58 type and bundle checks described below; native binary/device behavior
+remains unverified. The unsupported native web script is removed; this variant
+targets iOS and Android. The earlier SDK 54 success cannot establish SDK 58
+compatibility.
+
+The next web resolution completed at `/tmp/template-dependency-resolution-eu53yb30`.
+All five web clients then passed every check in
+`/tmp/template-dependency-check-_3ik_0un/report.json`, including all 44 auth
+regressions and production audits reporting no known vulnerabilities. Their
+manifest and lock hashes match the checkout. No web rerun is needed for the
+native-only repairs below.
+
+Native resolution at `/tmp/template-dependency-resolution-3a9twahf` wrote a new
+SDK 58 lock but failed its peer check: Expo Router requires Metro runtime
+`^58.0.16`, while the previously auto-installed runtime remained at `6.1.2`.
+The subsequent frozen install skipped resolution and did not rediscover that
+peer error. `/tmp/template-dependency-check-52oqr1td/report.json` then stopped
+at three TypeScript errors in the input wrappers. Native exports and audit did
+not execute. A frozen-install success cannot override the failed resolver.
+
+The manifest now declares Metro runtime `~58.0.16` explicitly. The TypeScript
+failure was reproduced with SDK 58 / RN 0.88.1: Tamagui 1's input declarations
+use the component type where an instance is required. A recorded pnpm patch
+changes that declaration to `React.ComponentRef<typeof NativeTextInput>`;
+the wrappers retain the correct native-instance contract. Tamagui packages are
+pinned together at 1.144.1, and Docker copies the patch before installation.
+The generated `/tmp/template-native-repair` project preserves the patch bytes.
+After applying that exact declaration correction to its isolated copy of the
+installed dependencies, lint/types and all 14 native auth/storage cases pass.
+The patch applies and reverses cleanly in dry-run checks.
+
+The later normal-terminal reports at
+`/tmp/template-dependency-check-wfbkibzx/report.json` (06:34:19 EST) and
+`/tmp/template-dependency-check-s_pzl5sv/report.json` (06:45:31 EST) matched the
+manifest, lock, and patch hashes at that checkpoint.
+Both passed strict frozen installation with the recorded patch, Expo package
+alignment, lint/types, all 14 authentication/storage cases, and both iOS and
+Android exports. Both stopped only at the production dependency audit: one
+critical, 24 high, and nine moderate findings. These are dependency advisories,
+not demonstrated exploitable paths in the mobile application.
+
+The 25 displayed high/critical findings concern seven packages: shell-quote,
+picomatch, @xmldom/xmldom, ws, js-yaml, browserslist, and compression. Reviewed
+fixes fit the installed parents' existing dependency ranges. Repeating the old
+lock-only install retained vulnerable versions that still satisfied those ranges.
+The client resolver now runs `pnpm update --depth Infinity --lockfile-only
+--no-save`, followed by strict `pnpm install --resolution-only` validation.
+Declared ranges and exact pins stay unchanged. Real offline pnpm fixtures
+reproduced the stale lock, refreshed it to a patched version, preserved an exact
+pin, and proved that the resolver rejects an incompatible peer after updating.
+
+The local checker and CI now retain full JSON production audits and fail on
+findings at any severity. This deliberately strengthens the previous high-only
+threshold and exposes the nine moderate findings that its output omitted.
+The networked refresh at `/tmp/template-dependency-resolution-4hkntnx_` completed.
+Its fresh check at `/tmp/template-dependency-check-x17swp_a` exposed Biome 2.6.4's
+new raw-text rule and export ordering. The flagged card components extend native
+Text. Biome now recognizes those four names, uses the current configuration
+preset/schema, and is pinned to 2.6.4; the export order is corrected. Independent
+fixtures still reject raw text inside View and CardFooter. pnpm generated the
+corresponding lock change.
+
+The next full run at `/tmp/template-dependency-check-ar8prrrn` passed fresh
+installation, Expo alignment, lint/types, all 14 auth/storage cases, and both
+exports. Its JSON audit reported only two moderate findings: glob and minimatch,
+both published October 27. High and critical findings were zero. A first scoped
+CLI override passed six new compatibility cases in
+`/tmp/template-dependency-check-m__p733r`, but its audit exposed another parent
+sharing the old versions. Audit output had reported a representative path.
+
+The full production graph was then inventoried. Five Expo packages require glob
+13, and fingerprint also requires minimatch 10 directly. Exact-parent overrides
+now select glob 14.0.3 and minimatch 11.0.4 across all those references. Real pnpm
+resolution completed using cached metadata; a traversal of all 695 production
+nodes finds only the patched versions of these packages. Eleven compatibility
+cases cover the actual Expo consumers and run in the helper and CI. The completed
+run at `/tmp/template-dependency-check-dt4bpkh_/report.json` passes fresh strict
+installation, Expo alignment, lint/types, all 25 native regressions, both exports,
+and the production audit. The audit reports zero findings at every severity
+across 696 dependencies. Manifest, lock, patch, Biome configuration, and input
+source match the checkout. Native binary/device execution is still unverified.
+
+The five Vite configs now use `import.meta.dirname`, addressing the warning
+observed during their actual Vite 8 builds. Refreshed advisory and SDK evidence,
+including the distinction between prepared and verified changes, is recorded in
+`docs/research/2026-11-02-client-audit-follow-up.md`.
+
+`just check-dependencies` copies each of the 13 projects with the generator's
+credential/cache exclusions, installs locked dependencies, runs the applicable
+lint/types/build/local regressions, and audits production dependencies. It retains
+isolated projects, per-project logs, input hashes, and `report.json` beneath the
+printed `/tmp/template-dependency-check-*` directory. Manifests, locks, and
+dependency patches must stay byte-identical during verification. Failures are
+retained per project and do not hide later projects. Group selection and a command-plan recipe support follow-up
+runs. Native checks now include Expo package alignment and both iOS and Android
+exports. PostgreSQL, Docker startup, native binary builds, and actual browser or
+device checks are outside this command's pass result.
+
+Five helper regressions pass: existing environments/secrets are excluded without
+changing the source; a command failure stops that project and retains its log;
+a successful command that mutates a copied lock or dependency patch still fails;
+and quiet output preserves both child output streams in the log. The checker
+prints commands and results by default, with `--verbose` available for full
+terminal output. Requirements export also suppresses its redundant stdout copy.
+Go audits request verbose details so unreachable module advisories are retained.
+CI mirrors the stricter peer checks, Expo alignment, and both native exports.
+The scripts pass Ruff and the workflow passes actionlint. Registry DNS remains
+unavailable to this runner. A separate offline Go helper attempt failed on
+uncached metadata, and a direct verbose scan could not reach `vuln.go.dev`;
+neither overrides the completed normal-terminal run.
+
+Both nested minimal examples now have distinct literal Compose namespaces,
+generated high ports and credentials, an asyncpg database URL, PostgreSQL 18's
+correct volume target, read-only source mounts, non-root backend users, and build
+context exclusions. Their instructions use the generated parent environment and
+describe the limited authentication scope. They still lack refresh tokens,
+logout revocation, password-change token invalidation, and rate limiting; their
+historical directory name is not a production-readiness claim.
+
+`just check-template` passes 16 generator tests, five dependency-helper tests,
+and 15 runtime-helper tests, plus ShellCheck and Bash syntax checks.
+The expanded Compose contract test renders 17 configurations, including both
+nested examples, and checks credentials, namespaces, mount targets, and unique
+high ports. Rendering does not start Docker containers or execute PostgreSQL.
+Native's Metro/patch repair now passes fresh installation, SDK alignment,
+lint/types, regressions, both exports, and a clean production audit. A patched
+Node runtime, native binary/device checks, and completion of the generated
+runtime matrix remain release work.
+
+The normal-terminal PostgreSQL run passed all five backends, retained at
+`/tmp/template-postgres-check-b9yqm2b5/report.json`. Each Python FastAPI copy
+passed 42 regular tests and seven independent session-security tests. Portfolio
+passed 39 regular tests and 23 session/integrity/media cases, totaling 160 Python
+tests. All three Alembic migration chains completed. Both Go race suites passed
+their PostgreSQL transaction and account-update cases with no skips. Recorded
+dependency hashes match the checkout. All copied source files also match except
+the two Go Dockerfiles/development Compose definitions repaired after this run.
+
+Verbose Go scans identify the remaining module-only finding as
+[GO-2026-5932](https://pkg.go.dev/vuln/GO-2026-5932), published July 7: unmaintained
+OpenPGP packages inside `golang.org/x/crypto`. Both scans report zero affected
+symbols and zero affected imported packages. The application imports Argon2 from
+that module, not OpenPGP. This closes the unidentified-advisory question; no
+ignore or dependency substitution was introduced.
+
+The Docker report at `/tmp/template-runtime-check-i3uuqrn5/report.json` preserves
+seven passes: Go production, and development/production for FastAPI, open, and
+the authenticated web frontend. Go development exited 137 with compiler
+processes reporting `signal: killed`. Its rendered configuration confirms that
+`extends` inherited the production 256 MiB limit. OOM is the leading diagnosis;
+the deleted container's OOM flag and inaccessible kernel journal prevent direct
+confirmation. Both Go development variants now override the limit to 2 GiB,
+run `go run -p=2`, and allow two minutes of health-check startup grace for cold
+compilation. A generated-configuration regression failed on the original
+limit in both variants, then passed with the repair. A Docker rerun is pending.
+
+Native timed out while pnpm reported ENOSPC writing `/app/.pnpm-store` through
+the generated source bind mount into `/tmp`. Container/volume cleanup completed,
+but writing its case result also failed. The matrix stopped before the six
+combined-stack cases. Later filesystem inspection shows `/tmp` is a 32 GiB
+tmpfs with 17 GiB now available, while the checkout disk has 192 GiB available.
+The earlier peak use and what freed it are unknown; no global Docker cleanup
+was performed by this agent.
+
+Fresh dependency, PostgreSQL, and runtime workspaces now default to the sibling
+`.template-checks` directory, with child temporary files on the same filesystem.
+`TEMPLATE_CHECK_ROOT` can select another location outside the source checkout.
+Reports use atomic replacement. A full log device no longer prevents the
+checker from attempting its owned Compose teardown. New regressions exercise
+disk-write failure, cleanup under ENOSPC, and repeated report-based resumption.
+`just resume-generated /tmp/template-runtime-check-i3uuqrn5/report.json` selects
+the eight failed/unrecorded cases and references the seven prior passes without
+modifying old evidence. Resume does not certify that earlier source snapshots
+are unchanged; final release CI still needs the complete matrix.
+
+The runner's Docker socket still returns `operation not permitted`. The retained
+normal-terminal PostgreSQL and seven Docker passes are verified evidence;
+the repaired Go/native cases and combined stacks remain pending execution.
 
 ## Continuation status, November 1
 

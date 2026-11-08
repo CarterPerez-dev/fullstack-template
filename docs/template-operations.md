@@ -10,6 +10,14 @@ variant archive. A generated application has no synchronization relationship wit
 either source; fix recurring problems in this repository and regenerate a clean
 test project before releasing the fix.
 
+As of November 8, the current priority is the web/backend templates and public
+distribution. Carter has deferred React Native Docker/device verification and
+stopped the repeated manual Docker matrix loop. The existing commands below
+remain available; they are not another requested manual assignment. Preserve
+the recorded passing results and disclose unexecuted combined-stack/browser
+checks when describing release readiness. The current scope and evidence are in
+`docs/plans/2026-10-25-template-release-audit.md`.
+
 ## Development and production
 
 Generate outside this repository, enter the generated directory, then inspect
@@ -34,6 +42,8 @@ address and `EXPO_PUBLIC_API_URL` to a backend URL reachable from that device.
 client bundle and must never contain credentials. Production API URLs must be
 HTTPS. Run Metro through the generated Docker recipe; native signing and device
 installation still require the platform's normal build workflow.
+This variant targets iOS and Android. Its SecureStore authentication has no browser
+storage adapter; use a web variant for a browser application.
 
 ## Administrator enrollment
 
@@ -143,7 +153,8 @@ the same key preserves the identifier published in JWKS.
 
 ## Local verification
 
-Dependency candidates were refreshed on November 1. Start with:
+Dependency candidates were refreshed on November 1, with a client audit follow-up
+on November 2. Start with:
 
 ```bash
 just dependency-plan
@@ -157,37 +168,179 @@ graph, and both Go modules. Use `python`, `web`, `native`, or `go` as the recipe
 argument to resume one group. It stops on failure and retains output in the
 printed `/tmp/template-dependency-resolution-*` directory. Package managers
 update manifests/locks; this command does not establish a fresh installation or
-a passing test matrix. Inspect the resulting diffs before proceeding.
+a passing test matrix. Client resolution refreshes nested dependencies with
+`pnpm update --depth Infinity --lockfile-only --no-save`, preserving declared
+ranges and exact pins. It then runs `pnpm install --resolution-only` with strict
+peer checks; pnpm's update step alone can report a peer warning without failing.
+Inspect the resulting diffs before proceeding.
 
-As of the November 1 preparation, Python/web manifests are ahead of their old
-locks, both minimal examples need newly generated `uv.lock` files, and Go modules
-still need the selected upgrades resolved. Frozen installs cannot pass until
-this step succeeds. The native manifest has shared tooling/Axios/Babel updates
-but still uses SDK 54; the coordinated supported-SDK migration remains required.
+Missing pinned tool versions may be downloaded into the managers' caches.
+Corepack uses each client's declared pnpm version; its update banner does not
+change that pin. Go downloads its selected toolchain alongside existing versions.
+The resolver fails on peer conflicts and prints a group-specific resume command
+when interrupted. A cancelled run preserves lockfiles from completed projects.
+
+On November 2, the first complete fresh-install run finished all 13 projects.
+Five Python and two Go projects passed. The Go audits found no affected calls,
+but reported one required-module advisory, later identified as GO-2026-5932 in
+unused OpenPGP packages. PostgreSQL cases skipped in that dependency-only run.
+The subsequent Zod 4.6.6 follow-up passed all five web
+clients' fresh installations, builds, regressions, and production audits, with
+no known vulnerabilities reported. Native's first SDK 58 resolution failed on
+an old Metro runtime peer; its later type check also exposed a Tamagui input
+declaration mismatch. Metro is now explicit, and a recorded declaration patch
+fixes the type error. Native's deep dependency refresh also required migrating
+Biome's configuration and recognizing its four existing card text components.
+The fresh report at `/tmp/template-dependency-check-ar8prrrn` passes installation,
+Expo alignment, lint/types, all 14 authentication/storage cases, and both exports.
+Its audit reduced 34 findings to two moderate advisories in glob and minimatch,
+with no high or critical findings. Repairing only the reported CLI path exposed
+other Expo parents sharing the old versions in the next audit.
+
+The manifest now scopes patched dependency overrides to all five affected Expo
+parents, including fingerprint's direct minimatch dependency. The genuine lock
+resolves every production reference to glob 14.0.3 and minimatch 11.0.4. Eleven
+tooling compatibility cases were added. The final native report at
+`/tmp/template-dependency-check-dt4bpkh_/report.json` passes fresh strict installation,
+Expo alignment, lint/types, all 25 regressions, both exports, and a production
+audit with zero advisories. Its recorded inputs match the checkout. Native binary
+and device testing remain separate. No repeat dependency run is required unless
+its inputs change or a new advisory requires investigation.
+
+Native's Tamagui 1.144.1 patch changes only its input instance declaration. It is
+part of the generated project, copied into Docker before dependency installation,
+and applied by pnpm. Reassess or remove it when upgrading Tamagui; a missing or
+inapplicable patch must fail installation. Do not disable strict peer checks to
+get through a migration. pnpm may write a lock before reporting a resolver error,
+and a subsequent frozen install may skip peer resolution. Chain the commands
+with `&&` when verifying an upgrade:
+
+```bash
+just resolve-dependencies native && just check-dependencies native
+```
+
+Validate fresh installations after resolving the locks:
+
+```bash
+just dependency-check-plan
+just check-dependencies
+just check-dependencies web
+```
+
+The check command copies selected projects into a fresh temporary directory,
+excluding installed environments, caches, and private files with the generator's
+filters. It performs locked installs, applicable lint/types/build/local regression
+checks, and production dependency audits. Missing packages and audit tools are
+downloaded. Source environments and lockfiles are preserved, and any change to a
+copied manifest, lock, or dependency patch fails that project. Use `python`,
+`web`, `native`, or `go` to select a group. A failure stops that project's commands while later projects
+continue. Ctrl-C stops the active process and retains completed results.
+Native also checks Expo package alignment and exports iOS and Android bundles.
+Those exports do not build or install native binaries.
+Its tooling regressions exercise Expo's actual file discovery, routing, native
+project paths, workspace matching, fingerprint ignores, and cancellation behavior.
+The generated native project's `DEPENDENCIES.md` records why the scoped overrides
+exist and when to remove them.
+
+Client audits use `pnpm audit --prod --json` locally and in CI. Full advisory
+details are retained in the log, and any reported severity fails the check.
+This replaces the earlier high-only threshold, which also hid moderate and low
+advisory details in its output. Do not disable checks or ignore advisories to
+turn a failing dependency graph into a passing release result.
+
+Projects, logs, and a JSON report remain under the printed
+`template-dependency-check-*` directory for inspection. The report records
+the exact manifest, lock, and dependency patch hashes for each project. This
+command intentionally does not connect to a PostgreSQL test database or start application services;
+Go's database cases skip. Python runs the isolated HTTP/lifespan regressions.
+Run the full PostgreSQL and Docker gates separately after compatibility checks.
+The script's explicit `--offline` mode uses cached packages and skips dependency
+audits, so its result cannot satisfy the audit gate.
+
+By default, the terminal shows commands and results while full child output goes
+to the log. To stream it as well, run
+`python3 -B tests/release/check_dependencies.py web --verbose`. A lost terminal
+scrollback does not prevent inspection of the saved logs and report. New
+verification workspaces live in `.template-checks` beside the source checkout,
+on its filesystem instead of the system temporary directory. Override this with
+`TEMPLATE_CHECK_ROOT=/path/on/disk` outside the checkout. Child processes also
+use that workspace for temporary files. Each workspace is private and needs at
+least 2 GiB free to start; the generated matrix checks again before each case.
+Reports are replaced atomically so a partial write cannot truncate earlier
+results. Older reports retained in `/tmp` still need preservation before reboot
+or temporary-directory cleanup.
 
 ```bash
 just check-template
+just check-postgres
+just check-postgres go
 just check-generated
 just check-generated fastapi-stack development
 just check-generated go-stack production
 ```
 
-The runtime script creates a random project in a temporary directory and removes
-only that project's containers and volumes. It checks builds, service readiness,
+`just check-postgres` starts one disposable PostgreSQL 18 container on a random
+high loopback port. Each of the three Python and two Go backends gets its own
+database and a clean source copy. It runs their full test suites, dedicated
+Python session/portfolio regressions, Python migrations, and verbose Go
+vulnerability scans. Use `python` or `go` to select a group. No live environment
+files are loaded. Projects, logs, input hashes, and the report remain under the
+printed `template-postgres-check-*` directory; the fixture container and its
+volume are removed afterward. The Go scan still needs network access even when
+module downloads are cached.
+
+The generated runtime script creates random projects in a private temporary
+directory and removes only each project's containers and volumes. It checks builds, service readiness,
 database/Redis connections, frontend documents, and combined-stack proxy routes.
 It does not prove browser login, device behavior, backup/restore, or production TLS.
-The default runs all 15 cases and reports every failure. Docker access is checked
-before creating a project. The PostgreSQL backend test jobs in CI remain separate
-from this startup matrix.
+The default runs all 15 cases and reports every failure. It refreshes build base
+images, validates the disposable Docker namespaces before starting or cleaning
+anything, and uses generated environment values without ambient shell overrides.
+Projects, rendered configuration, command/service logs, per-case results, and the
+report remain under the printed `template-runtime-check-*` directory.
+Rendered configuration stays outside Docker build contexts. Ctrl-C cancels the
+active command, attempts cleanup, and retains the interrupted case's result.
+Both commands check Docker access before creating fixtures. The PostgreSQL tests
+remain separate from the generated startup matrix, locally and in CI.
+
+Run them in order with `just check-postgres && just check-generated`. Full command
+output goes to the saved logs. Retained fixtures contain generated credentials;
+keep the private workspace intact when investigating a failure.
+
+The November 2 PostgreSQL report at
+`/tmp/template-postgres-check-b9yqm2b5/report.json` passed all five backends:
+160 Python tests, all three migration chains, and both Go race suites including
+their database cases. The generated runtime report at
+`/tmp/template-runtime-check-i3uuqrn5/report.json` records seven passes. Go
+development exited 137 while compiling under an inherited 256 MiB production
+limit. Native's package installation exhausted `/tmp`, preventing its result
+file from being saved. Both cases need reruns; the three combined stacks had not
+started. Go development now has a 2 GiB limit, `go run -p=2`, and a two-minute
+health-check startup grace period for cold compilation in both copies.
+
+Resume only failed or unrecorded cases from that report:
+
+```bash
+just resume-generated /tmp/template-runtime-check-i3uuqrn5/report.json
+```
+
+This selects eight cases, generates fresh projects, and keeps the seven earlier
+passes as references in the new report. The old report and workspaces are not
+modified. Use `python3 -B tests/release/check_generated.py all all --resume
+/path/to/report.json --plan` to inspect selection without Docker. Resume does
+not revalidate source changes behind earlier passes; rerun any changed passed
+variant explicitly and run the complete matrix from the final release commit.
 
 Recent dependency evidence and candidate upgrade targets are recorded in
 `docs/research/2026-11-01-python-upgrade.md`,
 `docs/research/2026-11-01-go-infra-upgrade.md`, and
-`docs/research/2026-11-01-web-native-upgrade.md`. These are not resolved lockfiles. Run
-registry-backed resolution and fresh locked installations before treating any
-candidate as the release graph.
+`docs/research/2026-11-01-web-native-upgrade.md`, with the latest client findings in
+`docs/research/2026-11-02-client-audit-follow-up.md`. These are not resolved
+lockfiles. Run registry-backed resolution and fresh locked installations before
+treating any candidate as the release graph. Use a patched Node runtime as
+specified by the research; satisfying Expo's engine range alone is insufficient.
 
-Set `TEST_POSTGRES_URL` to a disposable PostgreSQL database for backend tests.
+For manual backend test runs outside the helper, set `TEST_POSTGRES_URL` to a disposable PostgreSQL database.
 Python configuration also requires `DATABASE_URL`, `SECRET_KEY`, and a development
 `ENVIRONMENT`; use disposable fixture values as the CI workflow does.
 Python expects a `postgresql+asyncpg://` URL; Go expects `postgres://`. Tests create

@@ -4,7 +4,7 @@
  */
 
 import { Eye, EyeOff } from 'lucide-react-native'
-import { forwardRef, type Ref, useState } from 'react'
+import { type ComponentRef, forwardRef, useState } from 'react'
 import type { TextInput as RNTextInput } from 'react-native'
 import {
   type GetProps,
@@ -86,6 +86,7 @@ const ErrorText = styled(Text, {
 })
 
 type InputFrameProps = GetProps<typeof InputFrame>
+type InputRef = ComponentRef<typeof RNTextInput>
 
 interface PasswordInputProps
   extends Omit<InputFrameProps, 'ref' | 'secureTextEntry' | 'error'> {
@@ -93,7 +94,7 @@ interface PasswordInputProps
   errorMessage?: string
 }
 
-export const PasswordInput = forwardRef<RNTextInput, PasswordInputProps>(
+export const PasswordInput = forwardRef<InputRef, PasswordInputProps>(
   function PasswordInput({ label, errorMessage, ...props }, ref) {
     const [showPassword, setShowPassword] = useState(false)
 
@@ -104,7 +105,7 @@ export const PasswordInput = forwardRef<RNTextInput, PasswordInputProps>(
     const input = (
       <InputWrapper>
         <InputFrame
-          ref={ref as Ref<RNTextInput>}
+          ref={ref}
           secureTextEntry={!showPassword}
           error={!!errorMessage}
           autoCapitalize="none"

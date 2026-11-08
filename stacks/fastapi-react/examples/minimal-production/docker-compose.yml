@@ -1,20 +1,21 @@
-# =========================================
-# AngelaMos | 2025
-# =========================================
+# ©AngelaMos | 2026
+# docker-compose.yml
+
+name: fastapi-react-minimal-dev
 
 services:
   db:
-    image: postgres:18-alpine
+    image: postgres:18.6-alpine
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: minimal_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-app_db}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${MINIMAL_POSTGRES_HOST_PORT:-45433}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,18 +25,20 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "127.0.0.1:${MINIMAL_BACKEND_HOST_PORT:-48001}:8000"
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - ../../.env.development
     environment:
-      DATABASE_URL: postgresql://user:password@db:5432/minimal_db
-      SECRET_KEY: dev-secret-key-change-in-production-min32chars
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-app_db}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY}
       ENVIRONMENT: development
-      DEBUG: "true"
+      DEBUG: "false"
       RELOAD: "true"
     volumes:
-      - ./backend:/app
+      - ./backend:/app:ro
     command: sh -c "alembic upgrade head && exec uvicorn app.__main__:app --host 0.0.0.0 --port 8000 --reload"
 
 volumes:

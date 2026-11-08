@@ -1,0 +1,19 @@
+# ©AngelaMos | 2026
+# .dockerignore
+
+.env
+.env.*
+!.env.example
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.pem
+*.key
+*.log
+dist
+build

@@ -1,92 +1,59 @@
-# Minimal FastAPI Template
+<!-- ©AngelaMos | 2026 -->
+<!-- README.md -->
 
-A minimal production-ready FastAPI template with JWT authentication and PostgreSQL.
+# Minimal FastAPI example
 
-## Features
+This bundled development example demonstrates async SQLAlchemy, PostgreSQL,
+Alembic migrations, and JWT access-token authentication. Its historical
+`minimal-production` directory name does not establish production readiness.
+Use the generated project's main backend for its fuller authentication lifecycle.
 
-- FastAPI with async/await
-- JWT access token authentication
-- PostgreSQL with SQLAlchemy 2.0 (async)
-- Alembic migrations
-- Domain-driven structure
-- Docker and docker-compose setup
+## Start from a generated project
 
-## Quick Start
+Run these commands from the generated project's root. Generation creates the
+parent `.env.development` with credentials and high host ports. Compose uses that
+file for both interpolation and the backend environment; no additional `.env`
+copy is needed inside this example.
 
-1. Copy `.env.example` to `.env` and update the values:
 ```bash
-cp .env.example .env
+docker compose --env-file .env.development \
+  -f examples/minimal-production/docker-compose.yml up --build -d
+
+docker compose --env-file .env.development \
+  -f examples/minimal-production/docker-compose.yml port backend 8000
 ```
 
-2. Start the services:
+Use the reported loopback address with `http://` to open `/docs` or `/health`.
+Port 8000 is internal to the container. The API and database publish separate
+high host ports, and this example has its own Compose namespace and data volume.
+
+The image installs the committed `uv.lock` with uv and runs as an unprivileged
+user. Startup applies Alembic migrations before starting Uvicorn. Source is
+mounted read-only; edit files on the host and the development reloader sees them.
+PostgreSQL 18 persists its data beneath `/var/lib/postgresql` in a named volume.
+
 ```bash
-docker-compose up -d
+docker compose --env-file .env.development \
+  -f examples/minimal-production/docker-compose.yml logs --tail 100 backend
+
+docker compose --env-file .env.development \
+  -f examples/minimal-production/docker-compose.yml down
 ```
 
-The API will be available at http://localhost:8000
+Stopping with `down` retains the database volume. Keep runtime services in Docker.
 
-API docs at http://localhost:8000/docs
+## Authentication scope
 
-## Project Structure
+`POST /v1/users` registers a user. `POST /v1/auth/login` accepts an OAuth2 password
+form with the email in `username` and returns an access token. Send it as a Bearer
+token to `GET /v1/auth/me` or `POST /v1/users/change-password`.
 
-```
-backend/
-├── app/
-│   ├── auth/              # Authentication domain
-│   ├── core/              # Core utilities and shared code
-│   ├── user/              # User domain
-│   ├── config.py          # Application settings
-│   ├── factory.py         # FastAPI app factory
-│   └── __main__.py        # Entry point
-├── alembic/               # Database migrations
-├── pyproject.toml         # Dependencies
-├── Dockerfile
-└── .env.example
-```
+This example has no refresh-token flow, rate limiting, or token-version
+invalidation after a password change. Its `/v1/auth/logout` endpoint is a
+placeholder and does not revoke issued tokens; clients must discard their local
+token, which otherwise remains valid until expiry. The full stack's frontend
+expects the main backend's refresh contract and cannot be pointed at this example
+without adapting its authentication client.
 
-## Development
-
-Install dependencies:
-```bash
-cd backend
-pip install -e ".[dev]"
-```
-
-Run locally:
-```bash
-cd backend/app
-python -m uvicorn __main__:app --reload
-```
-
-Create new migration:
-```bash
-cd backend
-alembic revision --autogenerate -m "description"
-```
-
-Run migrations:
-```bash
-cd backend
-alembic upgrade head
-```
-
-## API Endpoints
-
-- `POST /v1/users` - Register new user
-- `POST /v1/auth/login` - Login (returns access token)
-- `GET /v1/auth/me` - Get current user
-- `POST /v1/auth/logout` - Logout (placeholder)
-- `POST /v1/users/change-password` - Change password
-- `GET /health` - Health check
-- `GET /health/detailed` - Detailed health check
-
-## Extending
-
-This is a minimal starting point. You can add:
-- Refresh tokens
-- Email verification
-- Password reset
-- User roles
-- Rate limiting (add Redis + slowapi)
-- Structured logging (add structlog)
-- More domains following the same pattern
+The source, dependencies, migrations, and Docker runtime still require their
+release checks. Treat this as a limited example when choosing deployment code.

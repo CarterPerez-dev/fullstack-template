@@ -8,11 +8,12 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
 import time
 from urllib.error import URLError
 from urllib.request import urlopen
 from uuid import uuid4
+
+from runtime_checks import cleanup, create_workspace, environment, require_docker, require_space, run, write_report
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -68,49 +69,110 @@ def check_endpoints(variant: str, config: dict) -> None:
             wait_for(base + "/api" + route)
 
 
-def check_variant(variant: str, environment: str) -> None:
-    if variant == "native" and environment == "production":
+def validate_namespace(config: dict, name: str, dev: bool) -> None:
+    expected = name + "-dev" if dev else name
+    if config.get("name") != expected:
+        raise RuntimeError("Generated project has an unexpected Docker namespace")
+    for service in config.get("services", {}).values():
+        if "container_name" in service and not service["container_name"].startswith(name + "-"):
+            raise RuntimeError("Generated container name is outside the disposable namespace")
+    for kind in ("volumes", "networks"):
+        for resource in config.get(kind, {}).values():
+            if resource.get("external") or not resource.get("name", "").startswith(expected + "_"):
+                raise RuntimeError(f"Generated {kind} must belong to the disposable project")
+
+
+def check_variant(variant: str, environment_name: str, workspace: Path) -> dict:
+    if variant == "native" and environment_name == "production":
         raise ValueError("Native production bundles are verified by the Expo export job")
-    with tempfile.TemporaryDirectory(prefix="template-runtime-") as temporary:
-        parent = Path(temporary)
-        name = f"verify-{variant}-{uuid4().hex[:10]}"
-        subprocess.run(
-            [sys.executable, "-B", str(ROOT / "template-tool/cli.py"),
-             variant, name, "--source", str(ROOT), "--no-git"],
-            cwd=parent, check=True,
-        )
-        target = parent / name
-        dev = environment == "development"
-        compose = [
-            "docker", "compose", "--env-file", ".env.development" if dev else ".env",
-            "-f", "dev.compose.yml" if dev else "compose.yml",
-        ]
-        result = subprocess.run(
-            [*compose, "config", "--format", "json"], cwd=target,
-            capture_output=True, text=True, check=True,
-        )
-        config = json.loads(result.stdout)
-        if config["name"] not in {name, name + "-dev"}:
-            raise RuntimeError("Generated project has an unexpected Docker namespace")
+    parent = workspace / "projects"
+    name = f"verify-{variant}-{uuid4().hex[:10]}"
+    target = parent / name
+    log_path = workspace / "logs" / f"{variant}-{environment_name}.log"
+    result = {
+        "variant": variant, "environment": environment_name, "status": "running",
+        "project": str(target), "log": str(log_path),
+    }
+    values = environment(workspace=workspace)
+    owned_compose = None
+    with log_path.open("x") as log:
         try:
-            subprocess.run([*compose, "build"], cwd=target, check=True, timeout=1800)
-            subprocess.run(
-                [*compose, "up", "--wait", "--wait-timeout", "180"],
-                cwd=target, check=True, timeout=240,
+            run(
+                [sys.executable, "-B", str(ROOT / "template-tool/cli.py"),
+                 variant, name, "--source", str(ROOT), "--no-git"],
+                parent, values, log, timeout=120,
+            )
+            dev = environment_name == "development"
+            env_file = ".env.development" if dev else ".env"
+            values = environment(target / env_file, workspace=workspace)
+            compose = [
+                "docker", "compose", "--env-file", env_file,
+                "-f", "dev.compose.yml" if dev else "compose.yml",
+            ]
+            rendered = subprocess.run(
+                [*compose, "config", "--format", "json"], cwd=target, env=values,
+                capture_output=True, text=True, timeout=30,
+            )
+            log.write(rendered.stderr)
+            log.flush()
+            if rendered.returncode:
+                raise RuntimeError(f"Compose configuration failed with exit {rendered.returncode}")
+            config = json.loads(rendered.stdout)
+            (workspace / f"{variant}-{environment_name}.compose.json").write_text(rendered.stdout)
+            validate_namespace(config, name, dev)
+            owned_compose = [*compose, "--project-name", config["name"]]
+            result["project_name"] = config["name"]
+            run([*owned_compose, "build", "--pull"], target, values, log, timeout=1800)
+            run(
+                [*owned_compose, "up", "--wait", "--wait-timeout", "180"],
+                target, values, log, timeout=240,
             )
             check_endpoints(variant, config)
-            print(f"Verified generated {variant} ({environment})")
+            result["status"] = "passed"
+        except KeyboardInterrupt:
+            result["status"] = "cancelled"
+            raise
+        except (RuntimeError, ValueError, OSError, subprocess.SubprocessError) as error:
+            result.update(status="failed", error=str(error))
+            print(f"FAILED: {variant} ({environment_name}): {error}", flush=True)
+            try:
+                log.write(f"FAILED: {error}\n")
+            except OSError:
+                pass
         finally:
-            subprocess.run(
-                [*compose, "down", "--volumes", "--remove-orphans"],
-                cwd=target, check=True, timeout=120,
-            )
+            if owned_compose is not None:
+                errors = cleanup(owned_compose, target, values, log)
+                if errors:
+                    result.update(status="failed", cleanup_errors=errors)
+            write_report(workspace / f"{variant}-{environment_name}.json", result)
+    print(f"{result['status'].upper()}: {variant} ({environment_name})", flush=True)
+    if result["status"] != "passed":
+        print(f"  Log: {log_path}", flush=True)
+    return result
+
+
+def resume_cases(cases: list[tuple[str, str]], path: Path) -> tuple[list[tuple[str, str]], list[dict]]:
+    report = json.loads(path.read_text())
+    if not isinstance(report, dict) or not isinstance(report.get("results"), list) or not isinstance(report.get("retained_passes", []), list):
+        raise ValueError("Resume requires a generated runtime report with a results list")
+    recorded = {}
+    for result in [*report.get("retained_passes", []), *report["results"]]:
+        if (not isinstance(result, dict) or result.get("variant") not in VARIANTS
+                or result.get("environment") not in {"development", "production"}
+                or result.get("status") not in {"passed", "failed", "cancelled", "running"}):
+            raise ValueError("Resume report contains an invalid runtime case")
+        recorded[result["variant"], result["environment"]] = result
+    passed = [recorded[case] for case in cases if recorded.get(case, {}).get("status") == "passed"]
+    pending = [case for case in cases if recorded.get(case, {}).get("status") != "passed"]
+    return pending, passed
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build and start an isolated generated Docker project")
     parser.add_argument("variant", choices=(*VARIANTS, "all"))
     parser.add_argument("environment", choices=("development", "production", "all"))
+    parser.add_argument("--resume", type=Path, help="Skip cases recorded as passed in this earlier runtime report")
+    parser.add_argument("--plan", action="store_true", help="List selected cases without starting Docker or creating projects")
     args = parser.parse_args()
     variants = VARIANTS if args.variant == "all" else (args.variant,)
     environments = ("development", "production") if args.environment == "all" else (args.environment,)
@@ -121,21 +183,53 @@ def main() -> None:
     ]
     if not cases:
         parser.error("Native production bundles are verified by the Expo export job")
+    retained = []
+    if args.resume:
+        args.resume = args.resume.resolve()
+        cases, retained = resume_cases(cases, args.resume)
+        print(f"Retaining {len(retained)} prior passes from {args.resume}; {len(cases)} cases remain.", flush=True)
+    if args.plan or not cases:
+        for variant, environment_name in cases:
+            print(f"{variant} ({environment_name})")
+        return
+    require_docker()
+    workspace = create_workspace("template-runtime-check-")
+    (workspace / "projects").mkdir()
+    (workspace / "logs").mkdir()
+    report = {"status": "running", "results": [], "retained_passes": retained}
+    if args.resume:
+        report["previous_report"] = str(args.resume)
+    report_path = workspace / "report.json"
+    print(f"Retained projects, logs, and report: {workspace}", flush=True)
+    print("Only each generated project's containers and volumes are removed after its checks.")
     try:
-        subprocess.run(["docker", "info", "--format", "{{.ServerVersion}}"], check=True)
-    except (OSError, subprocess.CalledProcessError):
-        raise SystemExit("Docker access is required; no runtime cases were started") from None
-    failures = []
-    for variant, environment in cases:
-        try:
-            check_variant(variant, environment)
-        except (RuntimeError, ValueError, OSError, subprocess.SubprocessError) as error:
-            failures.append(f"{variant} ({environment})")
-            print(f"FAILED {failures[-1]}: {error}", file=sys.stderr)
+        for variant, environment_name in cases:
+            require_space(workspace)
+            print(f"Checking generated {variant} ({environment_name})", flush=True)
+            result = check_variant(variant, environment_name, workspace)
+            report["results"].append(result)
+            write_report(report_path, report)
+        report["status"] = "failed" if any(result["status"] != "passed" for result in report["results"]) else "passed"
+    except KeyboardInterrupt:
+        report["status"] = "cancelled"
+        raise
+    except (OSError, RuntimeError, ValueError) as error:
+        report.update(status="failed", error=str(error))
+        raise
+    finally:
+        write_report(report_path, report)
+    failures = [result for result in report["results"] if result["status"] != "passed"]
     if failures:
-        raise SystemExit(f"Failed {len(failures)}/{len(cases)} cases: {', '.join(failures)}")
-    print(f"Passed all {len(cases)} generated runtime cases")
+        raise RuntimeError(f"Failed {len(failures)}/{len(cases)} generated runtime cases; see {report_path}")
+    print(f"Passed all {len(cases)} selected generated runtime cases; {len(retained)} prior passes referenced. Report: {report_path}")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Runtime checks cancelled; projects, logs, and case results were retained.", file=sys.stderr)
+        raise SystemExit(130) from None
+    except (OSError, RuntimeError, ValueError) as error:
+        print(f"Runtime checks stopped: {error}", file=sys.stderr)
+        raise SystemExit(1) from None

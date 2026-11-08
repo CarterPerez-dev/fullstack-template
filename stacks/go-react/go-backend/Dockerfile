@@ -10,7 +10,7 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /api ./cmd/api
 RUN install -d -m 700 -o 65532 -g 65532 /runtime-keys
 
 FROM builder AS development
-CMD ["go", "run", "./cmd/api"]
+CMD ["go", "run", "-p=2", "./cmd/api"]
 
 FROM gcr.io/distroless/static-debian12:nonroot AS production
 COPY --from=builder /api /api

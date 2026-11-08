@@ -17,6 +17,14 @@ services:
       - "${API_HOST_PORT:-48001}:8080"
     volumes:
       - .:/build
+    healthcheck:
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 256M
 
   keys:
     extends:

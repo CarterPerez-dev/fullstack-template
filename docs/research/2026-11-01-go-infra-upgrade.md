@@ -220,10 +220,36 @@ bootstrap tests, authenticated Redis limiter checks, OTLP collector checks,
 Argon2 load/memory checks, and Go-stack browser authentication flow. Keep the
 project's literal Compose namespaces and arbitrary high host ports.
 
-Remaining unknowns are resolver success, complete indirect graph selection,
+At the time of this research, remaining unknowns were resolver success, complete indirect graph selection,
 compile compatibility including the old semconv path, symbol-aware advisory
 results, actual image digests, container/database behavior, and hosted CI
-results. None is represented here as passed.
+results. The execution follow-up below records the subsequently verified scope.
+
+## November 2 execution follow-up
+
+The normal-terminal report at `/tmp/template-postgres-check-b9yqm2b5/report.json`
+passes both Go modules with Go 1.26.10, including the previously skipped
+PostgreSQL transaction/account-update cases under the race detector. The retained
+manifest/sum hashes match the checkout. Verbose govulncheck 1.9.0 output reports
+zero affected symbols and zero affected imported packages in each module.
+
+The required-module finding is
+[GO-2026-5932](https://pkg.go.dev/vuln/GO-2026-5932), published July 7, 2026 and
+rechecked November 2. It covers the unmaintained `golang.org/x/crypto/openpgp`
+packages across all versions, with no fixed version listed. The application
+uses `golang.org/x/crypto/argon2`; neither scan finds an affected imported package.
+No advisory suppression or unnecessary replacement dependency was added.
+
+The first generated Docker run passes Go production but development exits 137
+during compilation. The resolved development Compose configuration inherited
+the production 256 MiB memory limit. Both development definitions now provide
+2 GiB, a two-minute health-check startup grace period, and `go run -p=2`; the
+[Go command documentation](https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies)
+defines `-p` as the concurrent build-command limit. Generated Compose regression
+checks catch the inherited cap and pass after the change. OOM remains an
+inference from killed compiler processes and the measured configuration;
+the original container state was removed and kernel logs were inaccessible.
+The repaired development runtime and Go-stack integration still need execution.
 
 ## Older baselines retained explicitly
 

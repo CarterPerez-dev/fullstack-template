@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -64,11 +65,42 @@ def commands(group: str) -> tuple[tuple[str, ...], ...]:
             ("go", "mod", "tidy"),
             ("go", "mod", "verify"),
         )
-    return (("pnpm", "install", "--lockfile-only", "--no-frozen-lockfile"),)
+    return (
+        ("pnpm", "update", "--depth", "Infinity", "--lockfile-only", "--no-save",
+         "--reporter=append-only"),
+        ("pnpm", "install", "--resolution-only", "--lockfile-only", "--no-frozen-lockfile",
+         "--strict-peer-dependencies", "--reporter=append-only"),
+    )
+
+
+def cancel_process(process: subprocess.Popen[str]) -> None:
+    if process.poll() is not None:
+        return
+    try:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGINT)
+        else:
+            process.terminate()
+    except ProcessLookupError:
+        pass
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        try:
+            if os.name == "posix":
+                os.killpg(process.pid, signal.SIGKILL)
+            else:
+                process.kill()
+        except ProcessLookupError:
+            pass
+        process.wait()
 
 
 def resolve(group: str, project: str, log_directory: Path) -> None:
     environment = os.environ.copy()
+    environment["NO_COLOR"] = "1"
+    environment.pop("FORCE_COLOR", None)
+    environment["COREPACK_ENABLE_DOWNLOAD_PROMPT"] = "0"
     if group == "go":
         environment["GOTOOLCHAIN"] = f"go{GO_VERSION}"
     directory = ROOT / project
@@ -87,14 +119,20 @@ def resolve(group: str, project: str, log_directory: Path) -> None:
             with subprocess.Popen(
                 command, cwd=directory, env=environment, text=True,
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                start_new_session=os.name == "posix",
             ) as process:
                 if process.stdout is None:
                     raise RuntimeError("Dependency resolver did not expose its output")
-                for line in process.stdout:
-                    print(line, end="", flush=True)
-                    log.write(line)
-                    log.flush()
-                if process.wait() != 0:
+                try:
+                    for line in process.stdout:
+                        print(line, end="", flush=True)
+                        log.write(line)
+                        log.flush()
+                    return_code = process.wait()
+                except KeyboardInterrupt:
+                    cancel_process(process)
+                    raise
+                if return_code != 0:
                     raise RuntimeError(f"{project}: resolver failed; see {log.name}")
 
 
@@ -121,17 +159,29 @@ def main() -> None:
 
     log_directory = Path(tempfile.mkdtemp(prefix="template-dependency-resolution-"))
     print(f"Resolution logs: {log_directory}", flush=True)
+    print(f"Selected tools: uv {UV_VERSION}, pnpm {PNPM_VERSION}, Go {GO_VERSION}.")
+    print("Missing tool versions are downloaded into package-manager caches.")
+    print("This step updates lockfiles; fresh dependency installation is separate.", flush=True)
+    if any(group in {"web", "native"} for group in groups):
+        print("Client locks refresh nested dependencies within declared ranges, then validate all peers.", flush=True)
     for group in groups:
-        for project in PROJECTS[group]:
-            resolve(group, project, log_directory)
+        try:
+            for project in PROJECTS[group]:
+                resolve(group, project, log_directory)
+        except KeyboardInterrupt:
+            print(f"Resume this group with: just resolve-dependencies {group}", file=sys.stderr)
+            raise
 
     print("Lock resolution completed. Review the manifest and lock diffs next.")
-    print("Fresh installs, audits, native SDK migration, and runtime checks remain required.")
+    print("Fresh installs, audits, native binary/device checks, and runtime checks remain required.")
 
 
 if __name__ == "__main__":
     try:
         main()
+    except KeyboardInterrupt:
+        print("Dependency resolution cancelled; completed lockfiles were preserved.", file=sys.stderr)
+        raise SystemExit(130) from None
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         print(f"Dependency resolution stopped: {error}", file=sys.stderr)
         raise SystemExit(1) from error

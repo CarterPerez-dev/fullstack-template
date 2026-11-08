@@ -126,7 +126,7 @@ def rewrite_file(path: Path, slug: str, title: str, literals, ports: Ports) -> b
     # 4. literal "HOST:CONTAINER" compose mappings (the Go templates)
     if "compose" in name and name.endswith((".yml", ".yaml")):
         def _literal_port(m: re.Match) -> str:
-            host, container = m.group(1), m.group(2)
+            container = m.group(2)
             if container in CONTAINER_PORTS or container in {"4317", "4318", "16686"}:
                 return f'"{ports.get(scope, "svc:" + container)}:{container}"'
             return m.group(0)

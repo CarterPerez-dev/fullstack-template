@@ -5,6 +5,7 @@ FROM node:22-slim
 RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml .npmrc ./
+COPY patches ./patches
 RUN pnpm install --frozen-lockfile
 COPY . .
 EXPOSE 8081

@@ -1,3 +1,6 @@
+// ©AngelaMos | 2026
+// babel.config.js
+
 module.exports = (api) => {
   api.cache(true)
   return {
@@ -19,7 +22,6 @@ module.exports = (api) => {
           config: './tamagui.config.ts',
         },
       ],
-      'react-native-reanimated/plugin',
     ],
   }
 }

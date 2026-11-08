@@ -24,5 +24,11 @@ RUN uv sync --locked --no-dev --no-editable
 
 ENV PYTHONPATH=/app/app
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+RUN groupadd -g 1001 appgroup && \
+    useradd -u 1001 -g appgroup -m -s /bin/false appuser
+
+USER appuser
 
 CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.__main__:app --host 0.0.0.0 --port 8000"]

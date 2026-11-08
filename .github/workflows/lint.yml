@@ -27,8 +27,13 @@ jobs:
         with:
           python-version: '3.12'
       - run: python3 -B -m unittest discover -s template-tool -p 'test_*.py' -v
+      - run: python3 -B -m unittest discover -s tests/release -p 'test_*checks.py' -v
       - run: shellcheck install.sh uninstall.sh template-tool/template template-tool/install.sh
-      - run: bash -n install.sh uninstall.sh template-tool/template template-tool/install.sh
+      - run: |
+          bash -n install.sh
+          bash -n uninstall.sh
+          bash -n template-tool/template
+          bash -n template-tool/install.sh
 
   python:
     runs-on: ubuntu-latest
@@ -91,7 +96,7 @@ jobs:
         run: uv run --no-sync alembic upgrade head
       - name: Audit locked production dependencies
         run: |
-          uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/requirements.txt"
+          uv export --quiet --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/requirements.txt"
           uvx --from pip-audit==2.10.1 pip-audit --no-deps --disable-pip --require-hashes -r "$RUNNER_TEMP/requirements.txt"
 
   python-examples:
@@ -166,7 +171,7 @@ jobs:
       - run: go vet ./...
       - run: go test -race -count=1 ./...
       - run: go build ./cmd/api
-      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 -show verbose ./...
 
   frontend:
     runs-on: ubuntu-latest
@@ -195,14 +200,14 @@ jobs:
           node-version: '22'
           cache: pnpm
           cache-dependency-path: ${{ matrix.path }}/pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --strict-peer-dependencies
       - run: pnpm lint
       - run: pnpm lint:scss
       - run: pnpm build
       - name: Browser refresh concurrency
         if: matrix.path != 'frontends/open/react-scss'
         run: node --experimental-vm-modules "$GITHUB_WORKSPACE/tests/release/test_client_refresh.mjs" "$GITHUB_WORKSPACE/${{ matrix.path }}"
-      - run: pnpm audit --prod --audit-level high
+      - run: pnpm audit --prod --json
 
   generated-runtime:
     needs: generator
@@ -259,11 +264,15 @@ jobs:
           node-version: '22'
           cache: pnpm
           cache-dependency-path: frontends/auth/react-native/pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --strict-peer-dependencies
+      - run: pnpm exec expo install --check
       - run: pnpm check
       - name: Native refresh concurrency
         run: node --experimental-vm-modules "$GITHUB_WORKSPACE/tests/release/test_client_refresh.mjs" "$GITHUB_WORKSPACE/frontends/auth/react-native"
       - name: Native credential storage ordering
         run: node --experimental-vm-modules "$GITHUB_WORKSPACE/tests/release/test_native_storage.mjs" "$GITHUB_WORKSPACE/frontends/auth/react-native"
+      - name: Native tooling file discovery
+        run: node "$GITHUB_WORKSPACE/tests/release/test_native_glob.mjs" "$GITHUB_WORKSPACE/frontends/auth/react-native"
       - run: pnpm exec expo export --platform ios --output-dir "$RUNNER_TEMP/native-export"
-      - run: pnpm audit --prod --audit-level high
+      - run: pnpm exec expo export --platform android --output-dir "$RUNNER_TEMP/native-export-android"
+      - run: pnpm audit --prod --json

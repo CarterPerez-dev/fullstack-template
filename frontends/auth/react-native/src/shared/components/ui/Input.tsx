@@ -3,7 +3,7 @@
  * Input.tsx
  */
 
-import { forwardRef, type Ref } from 'react'
+import { type ComponentRef, forwardRef } from 'react'
 import type { TextInput as RNTextInput } from 'react-native'
 import {
   type GetProps,
@@ -62,37 +62,28 @@ const ErrorText = styled(Text, {
 })
 
 type InputFrameProps = GetProps<typeof InputFrame>
+type InputRef = ComponentRef<typeof RNTextInput>
 
 interface InputProps extends Omit<InputFrameProps, 'ref' | 'error'> {
   label?: string
   errorMessage?: string
 }
 
-export const Input = forwardRef<RNTextInput, InputProps>(function Input(
+export const Input = forwardRef<InputRef, InputProps>(function Input(
   { label, errorMessage, ...props },
   ref
 ) {
   if (!label && !errorMessage) {
-    return (
-      <InputFrame
-        ref={ref as Ref<RNTextInput>}
-        error={!!errorMessage}
-        {...props}
-      />
-    )
+    return <InputFrame ref={ref} error={!!errorMessage} {...props} />
   }
 
   return (
     <InputContainer>
       {label && <Label>{label}</Label>}
-      <InputFrame
-        ref={ref as Ref<RNTextInput>}
-        error={!!errorMessage}
-        {...props}
-      />
+      <InputFrame ref={ref} error={!!errorMessage} {...props} />
       {errorMessage && <ErrorText>{errorMessage}</ErrorText>}
     </InputContainer>
   )
 })
 
-export { InputFrame, InputContainer, Label, ErrorText }
+export { ErrorText, InputContainer, InputFrame, Label }

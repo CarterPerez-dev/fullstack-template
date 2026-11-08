@@ -194,7 +194,12 @@ class ReleaseTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 target = self.root / f"compose-{name}"
                 namespaces = set()
-                for compose, environment in (("compose.yml", ".env"), ("dev.compose.yml", ".env.development")):
+                published_ports = set()
+                cases = [("compose.yml", ".env"), ("dev.compose.yml", ".env.development")]
+                minimal = "examples/minimal-production/docker-compose.yml"
+                if (target / minimal).exists():
+                    cases.append((minimal, ".env.development"))
+                for compose, environment in cases:
                     if not (target / compose).exists():
                         self.assertEqual(name, "native")
                         continue
@@ -206,9 +211,27 @@ class ReleaseTests(unittest.TestCase):
                     config = json.loads(result.stdout)
                     self.assertNotIn(config["name"], namespaces)
                     namespaces.add(config["name"])
+                    if name in {"go", "go-stack"} and compose == "dev.compose.yml":
+                        memory = int(config["services"]["api"]["deploy"]["resources"]["limits"]["memory"])
+                        self.assertGreaterEqual(memory, 1024 ** 3, "Go compilation must not inherit the production memory cap")
+                    if compose == minimal:
+                        self.assertEqual(config["name"], target.name + "-minimal-dev")
+                        database = config["services"]["db"]["environment"]
+                        backend = config["services"]["backend"]["environment"]
+                        expected_url = (
+                            f"postgresql+asyncpg://{database['POSTGRES_USER']}:"
+                            f"{database['POSTGRES_PASSWORD']}@db:5432/{database['POSTGRES_DB']}"
+                        )
+                        self.assertEqual(backend["DATABASE_URL"], expected_url)
+                        self.assertEqual(backend["ENVIRONMENT"], "development")
+                        self.assertNotIn("change-in-production", backend["SECRET_KEY"])
+                        self.assertEqual(config["services"]["backend"]["volumes"][0]["read_only"], True)
                     for service in config["services"].values():
                         for port in service.get("ports", []):
-                            self.assertTrue(30000 <= int(port["published"]) <= 60000)
+                            published = int(port["published"])
+                            self.assertTrue(30000 <= published <= 60000)
+                            self.assertNotIn(published, published_ports)
+                            published_ports.add(published)
                         if service.get("image", "").startswith("postgres:18"):
                             destinations = {volume["target"] for volume in service["volumes"]}
                             self.assertIn("/var/lib/postgresql", destinations)

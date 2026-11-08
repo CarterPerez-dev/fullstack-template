@@ -1,0 +1,15 @@
+# ©AngelaMos | 2026
+# tamagui@1.144.1.patch
+
+diff --git a/types/views/Input.d.ts b/types/views/Input.d.ts
+--- a/types/views/Input.d.ts
++++ b/types/views/Input.d.ts
+@@ -1,6 +1,7 @@
+ import React from 'react';
+ import type { GetProps } from '@tamagui/core';
+-import { TextInput } from 'react-native';
++import { TextInput as NativeTextInput } from 'react-native';
++type TextInput = React.ComponentRef<typeof NativeTextInput>;
+ export declare const defaultStyles: {
+     readonly borderColor: "$borderColor";
+     readonly backgroundColor: "$background";
