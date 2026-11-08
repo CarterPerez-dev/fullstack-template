@@ -1,0 +1,55 @@
+# ©AngelaMos | 2026
+# release.yml
+
+name: Publish template
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: template-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/lint.yml
+    with:
+      run_native: false
+
+  publish:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Package the checked commit
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 -B template-tool/release.py --version "$RELEASE_TAG" --output "$RUNNER_TEMP/template-assets"
+      - name: Verify release checksums
+        working-directory: ${{ runner.temp }}/template-assets
+        run: sha256sum --check checksums.txt
+      - name: Publish complete release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          flags=(--latest)
+          if [[ "$RELEASE_TAG" == *-* ]]; then
+            flags=(--prerelease --latest=false)
+          fi
+          gh release create "$RELEASE_TAG" "$RUNNER_TEMP/template-assets/"* \
+            --verify-tag --title "template $RELEASE_TAG" \
+            --notes-file docs/release-notes.md "${flags[@]}"

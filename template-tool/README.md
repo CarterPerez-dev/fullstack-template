@@ -8,11 +8,11 @@ The public command is a small Python zipapp. It downloads only the requested
 template archive and verifies its embedded SHA-256 checksum before extraction.
 Python 3.10 or newer is required; no Python package dependencies or rsync are needed.
 
-The coordinated public release is still in preparation. Packaging and generation
-tests are separate from application integration tests. See the
-[release audit](../docs/plans/2026-10-25-template-release-audit.md) for unresolved
-security and integration work. No installer hosting or GitHub release is implied
-by the commands below.
+The public release focuses on web/backend starters. Native remains experimental
+with Docker, binary, and device validation deferred. See the
+[release audit](../docs/plans/2026-10-25-template-release-audit.md) for recorded
+results and integration gaps. Installation requires the GitHub assets and hosted
+installer to have been published.
 
 ## Local development
 
@@ -40,7 +40,7 @@ the old unsafe `--force` flag is no longer supported.
 
 ## Public installation after publication
 
-The planned byte-served installer URL is:
+The installer URL is:
 
 ```bash
 curl -fsSL https://angelamos.com/template/install.sh | bash
@@ -69,13 +69,13 @@ generated projects and shared PATH configuration.
 | `fastapi` | `backends/fastapi` | FastAPI API |
 | `open` | `frontends/open` | React without authentication, with Docker |
 | `frontend` | `frontends/auth/react-scss` | React authentication client |
-| `native` | `frontends/auth/react-native` | Expo authentication client |
+| `native` | `frontends/auth/react-native` | Experimental Expo authentication client |
 | `fastapi-stack` | `stacks/fastapi-react` | FastAPI and React |
 | `go-stack` | `stacks/go-react` | Go and React |
 | `portfolio` | `stacks/portfolio` | Editable portfolio |
 
-All eight remain part of the coordinated release target. This table is a catalog,
-not a statement that every application's release gate has passed.
+All eight archives remain available. Native is excluded from the web/backend
+release gate; its optional CI workflow input retains the deferred checks.
 
 `template --version` identifies the command. `template info` shows its release
 metadata. Every generated project has `.template.json` with its template, source
@@ -107,7 +107,7 @@ generated project's `just` commands for its lifecycle.
 
 ```bash
 just check-template
-just package v0.1.0 /tmp/template-v0.1.0
+just package v0.1.0 ../.template-checks/template-v0.1.0
 ```
 
 A normal package build requires a clean checkout and a new output directory
@@ -125,6 +125,21 @@ bash uninstall.sh --prefix /tmp/template-test-bin
 ```
 
 Dirty builds are explicitly identified and rejected by the public installer.
-Do not publish development artifacts. Before publishing a clean build, run the
-application release matrix in the audit, inspect the actual commit, verify the
-live remote, and test the hosted installer in a fresh environment.
+Do not publish development artifacts. `just publish v0.1.0` verifies the live
+remote and fast-forwards the current/default branches plus tag atomically. It
+waits for GitHub's web/backend release checks and verifies the published assets.
+History divergence or a conflicting version stops publication without force.
+
+The maintainer can include installer deployment from the clean Angelamos checkout:
+
+```bash
+just publish v0.1.0 /home/yoshi/dev/design/001
+```
+
+That additionally pushes the website's current branch, rebuilds/recreates only
+nginx, verifies the exact public installer bytes, and performs an isolated public
+installation plus FastAPI/React, Go/React, and open-web generation. It preserves
+the existing local `template` command. GitHub authentication, registry/network
+access, and the website's existing Docker context are required. Use
+`python3 -B template-tool/publish.py v0.1.0 --website /path/to/website --plan`
+to inspect the steps without network access or writes.

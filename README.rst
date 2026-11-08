@@ -8,8 +8,9 @@ Opinionated application starters, generated with one command. The same generator
 uses a local checkout during development and individual versioned archives for
 public distribution.
 
-The coordinated release is in preparation. Application runtime checks, dependency
-updates, remote synchronization, and hosted installation are still release gates.
+The web and backend starters are the current release focus. Native remains
+experimental, with Docker, signed binary, and device validation deferred.
+Public installation requires a published GitHub release and installer deployment.
 See the `audit and verification record <docs/plans/2026-10-25-template-release-audit.md>`_.
 
 Generate locally
@@ -41,7 +42,7 @@ Available variants
 * ``fastapi``: FastAPI API, PostgreSQL, Redis, JWT authentication.
 * ``open``: React and SCSS without authentication.
 * ``frontend``: React authentication client for the FastAPI contract.
-* ``native``: Expo authentication client for the FastAPI mobile contract.
+* ``native``: Experimental Expo client for the FastAPI mobile contract.
 * ``fastapi-stack``: FastAPI with its React client.
 * ``go-stack``: Go with a React client adapted to its API contract.
 * ``portfolio``: Editable portfolio with administration through an owner account.
@@ -72,10 +73,18 @@ startup applies Alembic migrations. Use HTTPS for production authentication.
 Public distribution
 -------------------
 
-The planned installer endpoint is ``https://angelamos.com/template/install.sh``.
-It is not confirmed deployed. After publication, it installs the small
-``template`` command; generation downloads only the requested stack archive.
-Checksums and source revision metadata accompany each release.
+After publication, install from ``https://angelamos.com/template/install.sh``:
+
+.. code-block:: bash
+
+   curl -fsSL https://angelamos.com/template/install.sh | bash
+   template fastapi-stack my-app
+   template go-stack another-app
+
+The installer downloads the small ``template`` command. Each generation downloads
+only the requested stack archive, with checksums and source revision metadata.
+Re-running the installer updates the command; it does not change projects already
+generated. Use ``bash install.sh --version v0.1.0`` to pin a release.
 
 See `generator and installer details <template-tool/README.md>`_ and
 `operations and release instructions <docs/template-operations.md>`_.
@@ -90,9 +99,10 @@ Verification
 
 The second command needs Docker and creates an isolated temporary project. It
 builds and starts that project, checks readiness and proxy routing, then removes
-only its own containers and volumes. CI covers all eight variants, PostgreSQL
-security tests, dependency audits, web builds, and Expo export before packaging.
-Configured CI gates are not evidence of a completed successful CI run.
+only its own containers and volumes. Release CI covers web/backend variants,
+PostgreSQL security tests, dependency audits, and web builds before publishing.
+Native checks are available through the workflow's ``run_native`` input and are
+deferred by default. Configured gates are not evidence of a completed CI run.
 
 The frontend starter uses restrained spacing, system typography, and functional
 navigation. Its default screen provides no product branding or fabricated service

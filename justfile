@@ -53,3 +53,6 @@ dependency-check-plan group="all":
 
 package version output:
     python3 -B template-tool/release.py --version {{quote(version)}} --output {{quote(output)}}
+
+publish version website="":
+    python3 -B template-tool/publish.py {{quote(version)}} --website {{quote(website)}}

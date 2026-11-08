@@ -31,8 +31,8 @@ produce a project whose client, backend, environment, and deployment agree.
 Carter stopped the repeated manual Docker verification loop and explicitly
 deprioritized React Native. Defer native Docker/device verification and do not
 keep requesting the full runtime matrix as the next assignment. Focus on the
-web/backend templates and public distribution. This changes the work priority;
-it does not convert unexecuted cases into passes or remove existing CI checks.
+web/backend templates and public distribution. This does not convert unexecuted
+cases into passes. The publication follow-up below records the CI scope change.
 
 The five web clients passed fresh installs, lint/types/builds, applicable refresh
 regressions, and their November 2 production dependency audits. All five backends
@@ -50,11 +50,25 @@ is cancelled with no completed new cases and seven referenced earlier passes.
 
 The shared local/public generator, selective archives, installer, and neutral
 starter UI are implemented. The local command still points at this checkout.
-HEAD remains checkpoint `ab28a7c`, with the subsequent upgrade/runtime work
-uncommitted. Remote reconciliation, publishing, and hosted-installer verification
-remain unfinished in this execution record. The next useful work is a scoped
-commit and public distribution, with the remaining integration/source-review
-limits kept explicit rather than another blanket request for manual test runs.
+Commit `7bd539b` records the subsequent dependency/runtime work. Its hooks passed;
+the 36 local tooling tests passed before publication work. The source still
+matches the retained dependency reports. Remote reconciliation, publishing, and
+hosted-installer verification remain unconfirmed because this runner cannot
+resolve GitHub or access the Docker socket.
+
+The publication follow-up adds a tag-triggered release workflow and `just publish`.
+Web/backend checks remain required; native checks move to an explicit opt-in
+workflow input, including the native Docker case. Native is labeled experimental
+in the CLI, README, and release notes. The hosted install/uninstall scripts are
+staged in the Angelamos checkout and checked for byte equality with this source.
+The publisher verifies remote ancestry, pushes branches/tag atomically without
+force, waits for release CI, verifies downloaded assets, and can deploy only the
+website's nginx service before testing the real public installation. Prepared
+automation and local fixtures do not establish that those remote steps ran.
+All 43 local generator/publication/runtime-helper tests pass, including disposable
+Git histories for successful synchronization, remote divergence, and existing-tag
+protection. Ruff, actionlint, installer checks, and the Angelamos frontend build
+pass. The built website contains the exact installer/uninstaller source bytes.
 
 ## Continuation status, November 2
 

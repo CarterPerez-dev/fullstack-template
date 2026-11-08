@@ -233,6 +233,8 @@ def generate(args: argparse.Namespace, metadata: dict) -> Path:
             path.rename(dest)
     print(f"Generated {name} in {target}")
     print(f"Source: {metadata['version']} ({metadata['revision'] or 'unknown revision'})")
+    if name == "native":
+        print("Native is experimental: Docker, binary, and device validation are deferred.", file=sys.stderr)
     if args.install:
         try:
             install_dependencies(target)
@@ -263,7 +265,8 @@ def main() -> int:
             print(f"template {metadata['version']}")
         elif args.type == "list":
             for name, entry in CATALOG.items():
-                print(f"{name:16} {entry.path}")
+                status = " (experimental)" if name == "native" else ""
+                print(f"{name:16} {entry.path}{status}")
         elif args.type == "info":
             print(json.dumps(metadata, indent=2))
         elif args.type is None:

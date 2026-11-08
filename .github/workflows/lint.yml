@@ -5,8 +5,19 @@ name: Template release checks
 
 on:
   push:
+    branches: ['**']
   pull_request:
   workflow_dispatch:
+    inputs:
+      run_native:
+        description: Run deferred native exports, audits, and Docker verification
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      run_native:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -216,11 +227,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [go, fastapi, open, frontend, native, fastapi-stack, go-stack, portfolio]
+        variant: [go, fastapi, open, frontend, fastapi-stack, go-stack, portfolio]
         environment: [development, production]
-        exclude:
-          - variant: native
-            environment: production
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -231,7 +239,7 @@ jobs:
       - run: python3 -B tests/release/check_generated.py '${{ matrix.variant }}' '${{ matrix.environment }}'
 
   package-check:
-    needs: [generator, python, python-examples, go, frontend, native, generated-runtime]
+    needs: [generator, python, python-examples, go, frontend, generated-runtime]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -245,8 +253,9 @@ jobs:
       - run: python3 "$RUNNER_TEMP/template-assets/template.pyz" info
 
   native:
+    if: inputs.run_native
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     defaults:
       run:
         working-directory: frontends/auth/react-native
@@ -276,3 +285,6 @@ jobs:
       - run: pnpm exec expo export --platform ios --output-dir "$RUNNER_TEMP/native-export"
       - run: pnpm exec expo export --platform android --output-dir "$RUNNER_TEMP/native-export-android"
       - run: pnpm audit --prod --json
+      - name: Native development container
+        working-directory: ${{ github.workspace }}
+        run: python3 -B tests/release/check_generated.py native development

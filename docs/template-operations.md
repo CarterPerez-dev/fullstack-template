@@ -349,31 +349,70 @@ PostgreSQL because its models use JSONB. The dedicated Python session tests in
 `tests/release/test_python_security.py` run outside the regular conftest so their
 commit/rollback and concurrency checks exercise independent sessions.
 
-The CI workflow checks all variants and blocks its packaging job on lint, types,
-builds, real PostgreSQL tests, dependency audits, generated Docker startup, and
-Expo export. Browser/device validation remains an additional release gate.
+The CI workflow gates web/backend packaging on lint, types, builds, real
+PostgreSQL tests, dependency audits, and generated Docker startup. Its
+`run_native` dispatch input runs the retained native alignment, lint/types,
+regression, export, audit, and Docker checks when native work resumes. Native is
+experimental and deferred by default. Browser/device verification is separately
+recorded; publication does not imply those flows have been exercised.
 
 ## Publishing
 
-1. Review the audit's unresolved findings, update vulnerable locked dependencies,
-   and pass the complete CI matrix plus browser and device checks.
-2. Review the dirty checkout and stage only intended source changes. Preserve the
-   preexisting work. Verify the live remote and reconcile its history without
-   discarding local changes or force-pushing.
-3. Build from a clean reviewed commit with
-   `just package v0.1.0 /tmp/template-v0.1.0`. Development `--allow-dirty` artifacts
-   are explicitly marked and must never be published.
-4. Publish the version tag and all eight archives, `template.pyz`, `release.json`,
-   `checksums.txt`, `install.sh`, and `uninstall.sh` to the matching GitHub release.
-   Make the release immutable where supported.
-5. Serve the exact installer bytes at
-   `https://angelamos.com/template/install.sh`. The website source convention is
-   `~/dev/design/001/frontend/public/template/install.sh`. Hosting and deployment
-   require their own verified change; documentation does not deploy a URL.
-6. Fetch that exact public URL into a fresh isolated installation, verify the
-   installed version and source revision, generate each variant, and run its
-   checks. Test update, checksum failure, unrelated-command protection, and
-   uninstall as well.
+Commit reviewed source and update `docs/release-notes.md` for the release. The
+publisher requires clean checkouts and verifies the configured GitHub origins.
+It does not create or switch branches, rewrite history, move an existing tag, or
+replace a published release. If the remote has diverged, reconcile it before
+retrying. Branch protection is respected; a rejected push requires the normal
+pull-request route.
+
+```bash
+just publish v0.1.0
+```
+
+This fetches the live remote, checks ancestry, and atomically pushes the current
+branch, default branch, and version tag. The tag starts `.github/workflows/release.yml`,
+which reuses the web/backend checks, packages the clean commit, verifies every
+checksum, and publishes all eight archives plus the CLI, provenance, installers,
+and checksums. Native remains marked experimental. Prerelease tags are marked
+as prereleases and require an explicit installer `--version`; they are not
+selected by the default `latest` installation.
+
+The publisher waits for that exact tag/commit's workflow, downloads all published
+assets, and verifies checksums and provenance. Existing matching tags can resume
+this process; failed CI is reported without deploying the website. Inspect the
+workflow failure and use a new version for a changed commit. A partially created
+draft release is preserved for inspection, never silently overwritten.
+
+For the hosted installer, keep the reviewed `install.sh` and `uninstall.sh`
+byte-identical in the Angelamos checkout at `frontend/public/template/`, commit
+those website files, and include that checkout:
+
+```bash
+just publish v0.1.0 /home/yoshi/dev/design/001
+```
+
+The additional phase pushes the website's existing branch, runs its installer
+checks, builds only nginx, and recreates only nginx using the existing production
+tunnel Compose setup. It uses the default Docker context. Database, Redis, API,
+and tunnel services are not included in the restart command. It then fetches
+`https://angelamos.com/template/install.sh`, compares the actual bytes, installs
+into a disposable command directory, verifies the version/revision, generates
+FastAPI/React, Go/React, and open-web projects from public assets, and uninstalls
+the disposable command. The user's local development symlink stays in place.
+
+Temporary publication files live under `../.template-checks` and are removed on
+exit. Plan inspection does not contact GitHub, create a tag, or deploy:
+
+```bash
+python3 -B template-tool/publish.py v0.1.0 --website /home/yoshi/dev/design/001 --plan
+```
+
+For an independent package build, use
+`just package v0.1.0 ../.template-checks/template-v0.1.0` from a clean reviewed
+commit. Development `--allow-dirty` artifacts must never be published.
+See [GitHub's release CLI](https://cli.github.com/manual/gh_release_create) for
+draft-upload/publication behavior and immutable release support. The release
+workflow uses `--verify-tag` and never enables asset replacement.
 
 The installer can configure PATH for future shells, but a piped child process
 cannot change its parent shell's environment. It prefers an existing writable PATH
