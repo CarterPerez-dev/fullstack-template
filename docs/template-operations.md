@@ -4,7 +4,7 @@
 # Template operations and release
 
 The source checkout is `/home/yoshi/dev/templates`, configured for
-`CarterPerez-dev/Fullstack-setup`. The local `template` symlink reads this checkout.
+`CarterPerez-dev/fullstack-template`. The local `template` symlink reads this checkout.
 An installed release reads its embedded manifest and downloads a single pinned
 variant archive. A generated application has no synchronization relationship with
 either source; fix recurring problems in this repository and regenerate a clean
@@ -360,6 +360,10 @@ recorded; publication does not imply those flows have been exercised.
 
 Commit reviewed source and update `docs/release-notes.md` for the release. The
 publisher requires clean checkouts and verifies the configured GitHub origins.
+The canonical source is `CarterPerez-dev/fullstack-template`; update old
+`Fullstack-setup` remote URLs before publishing. GitHub metadata is read through
+`gh api` with paging and forced terminal output disabled for that subprocess.
+Empty or malformed responses stop publication with a command-specific error.
 It does not create or switch branches, rewrite history, move an existing tag, or
 replace a published release. If the remote has diverged, reconcile it before
 retrying. Branch protection is respected; a rejected push requires the normal

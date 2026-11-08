@@ -18,19 +18,38 @@ from urllib.request import Request, urlopen
 import zipfile
 
 from catalog import CATALOG
+from cli import REPOSITORY
 
 
 ROOT = Path(__file__).resolve().parent.parent
-REPOSITORY = "CarterPerez-dev/Fullstack-setup"
 WEBSITE_REPOSITORY = "AngelaMos-Inc/angelamos.com"
 INSTALL_URL = "https://angelamos.com/template/install.sh"
 
 
 def run(*command: str, cwd: Path | None = None, capture: bool = False, timeout: int = 120, env=None) -> str:
     print(shlex.join(command), flush=True)
+    if command[0] == "gh":
+        env = dict(os.environ if env is None else env)
+        for name in ("GH_FORCE_TTY", "CLICOLOR_FORCE", "FORCE_COLOR"):
+            env.pop(name, None)
+        env.update(GH_HOST="github.com", GH_PAGER="cat", PAGER="cat", NO_COLOR="1", GH_PROMPT_DISABLED="1")
     result = subprocess.run(command, cwd=cwd or ROOT, check=True, text=True,
                             stdout=subprocess.PIPE if capture else None, timeout=timeout, env=env)
     return result.stdout.strip() if capture else ""
+
+
+def github_json(*arguments: str, expected: type):
+    output = run("gh", *arguments, capture=True)
+    command = shlex.join(("gh", *arguments))
+    if not output:
+        raise RuntimeError(f"GitHub CLI returned empty output with exit status 0: {command}. Check gh auth status and CLI configuration")
+    try:
+        value = json.loads(output)
+    except json.JSONDecodeError:
+        raise RuntimeError(f"GitHub CLI returned invalid JSON ({len(output)} characters): {command}") from None
+    if not isinstance(value, expected):
+        raise RuntimeError(f"GitHub CLI returned an unexpected JSON structure: {command}")
+    return value
 
 
 def clean_checkout(root: Path, repository: str) -> tuple[str, str]:
@@ -53,11 +72,14 @@ def check_ancestor(root: Path, ref: str, revision: str) -> None:
 
 
 def sync_release(version: str, branch: str, revision: str) -> None:
-    repository = json.loads(run("gh", "repo", "view", REPOSITORY, "--json",
-                                "nameWithOwner,isPrivate,defaultBranchRef", capture=True))
-    if repository["nameWithOwner"].lower() != REPOSITORY.lower() or repository["isPrivate"]:
+    repository = github_json("api", "--hostname", "github.com", f"repos/{REPOSITORY}", expected=dict)
+    name = repository.get("full_name")
+    if not isinstance(name, str) or name.lower() != REPOSITORY.lower() or repository.get("private") is not False:
         raise ValueError("Publication requires the expected public repository")
-    default = repository["defaultBranchRef"]["name"]
+    default = repository.get("default_branch")
+    if not isinstance(default, str) or not default or default.startswith("-"):
+        raise ValueError("GitHub did not return a valid default branch")
+    run("git", "check-ref-format", "--branch", default, capture=True)
     run("git", "fetch", "--no-tags", "origin")
     for name in dict.fromkeys((default, branch)):
         ref = f"refs/remotes/origin/{name}"
@@ -86,9 +108,9 @@ def sync_release(version: str, branch: str, revision: str) -> None:
 
 def wait_for_release(version: str, revision: str) -> None:
     for _ in range(24):
-        runs = json.loads(run("gh", "run", "list", "--repo", REPOSITORY,
-                              "--commit", revision, "--branch", version, "--event", "push",
-                              "--json", "databaseId,url,workflowName", capture=True))
+        runs = github_json("run", "list", "--repo", REPOSITORY,
+                           "--commit", revision, "--branch", version, "--event", "push",
+                           "--json", "databaseId,url,workflowName", expected=list)
         runs = [item for item in runs if item["workflowName"] == "Publish template"]
         if runs:
             print(f"Release checks: {runs[0]['url']}", flush=True)

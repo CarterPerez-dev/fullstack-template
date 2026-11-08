@@ -70,6 +70,29 @@ Git histories for successful synchronization, remote divergence, and existing-ta
 protection. Ruff, actionlint, installer checks, and the Angelamos frontend build
 pass. The built website contains the exact installer/uninstaller source bytes.
 
+### Canonical repository correction, November 8
+
+Carter's screenshot and the live public page identify
+[`CarterPerez-dev/fullstack-template`](https://github.com/CarterPerez-dev/fullstack-template)
+as the intended repository. The local origin still used the obsolete
+`Fullstack-setup` name, which the first publisher implementation had copied.
+The origin, CLI archive downloads, both installer copies, and current release
+documentation now use the canonical name. The publisher imports that repository
+identity from the CLI. The backend license links now point to the repository's
+actual `LICENSE` file.
+
+The first normal-terminal publishing attempt passed Docker access but stopped
+while decoding `gh repo view` output, before fetching or pushing source. Empty and
+non-JSON fixtures reproduce that exact decoder error. Publication now reads the
+explicit REST repository endpoint, disables pagers and forced terminal rendering
+for GitHub subprocesses, validates JSON before Git writes, and reports the failing
+command. The original reason for the CLI's unusable output remains unconfirmed
+because this runner cannot reach the API. The screenshot's newer `main` merge
+also requires a fresh fetch before history reconciliation or publication.
+All 46 local tooling tests pass after this correction, along with Ruff,
+actionlint, shell syntax, and the website installer checks. The two installer
+copies remain byte-identical. No remote source or website deployment is implied.
+
 ## Continuation status, November 2
 
 Checkpoint `ab28a7c` (`chore: checkpoint template release preparation`) records

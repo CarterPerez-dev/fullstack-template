@@ -21,7 +21,7 @@ from catalog import CATALOG, excluded, resolve, source_files
 from rewrite import Ports, build_replacements, is_text, rewrite_file
 
 
-REPOSITORY = "CarterPerez-dev/Fullstack-setup"
+REPOSITORY = "CarterPerez-dev/fullstack-template"
 MAX_ARCHIVE_BYTES = 64 * 1024 * 1024
 MAX_EXTRACTED_BYTES = 512 * 1024 * 1024
 

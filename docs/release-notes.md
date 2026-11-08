@@ -34,7 +34,7 @@ validation are deferred. Native checks are opt-in and do not gate this release.
 The bundled `minimal-production` directories are limited authentication examples;
 use the main backends for the complete session lifecycle.
 
-See [installation and variants](https://github.com/CarterPerez-dev/Fullstack-setup/tree/main/template-tool),
-[operations](https://github.com/CarterPerez-dev/Fullstack-setup/blob/main/docs/template-operations.md),
-and the [audit record](https://github.com/CarterPerez-dev/Fullstack-setup/blob/main/docs/plans/2026-10-25-template-release-audit.md)
+See [installation and variants](https://github.com/CarterPerez-dev/fullstack-template/tree/main/template-tool),
+[operations](https://github.com/CarterPerez-dev/fullstack-template/blob/main/docs/template-operations.md),
+and the [audit record](https://github.com/CarterPerez-dev/fullstack-template/blob/main/docs/plans/2026-10-25-template-release-audit.md)
 for scope and evidence.

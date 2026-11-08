@@ -49,8 +49,8 @@ class PublicationHistoryTests(unittest.TestCase):
         execute = publish.run
 
         def command(*arguments, **keywords):
-            if arguments[:3] == ("gh", "repo", "view"):
-                return json.dumps({"nameWithOwner": publish.REPOSITORY, "isPrivate": False, "defaultBranchRef": {"name": "main"}})
+            if arguments[:2] == ("gh", "api"):
+                return json.dumps({"full_name": "CarterPerez-dev/fullstack-template", "private": False, "default_branch": "main"})
             return execute(*arguments, **keywords)
 
         with patch.object(publish, "ROOT", self.source), patch.object(publish, "run", side_effect=command), redirect_stdout(StringIO()):
@@ -86,6 +86,33 @@ class PublicationHistoryTests(unittest.TestCase):
             self.sync()
         self.assertEqual(self.git(self.remote, "rev-parse", "main"), self.base)
         self.assertEqual(self.git(self.remote, "rev-parse", "v0.1.0"), self.base)
+
+
+class GithubOutputTests(unittest.TestCase):
+    def test_empty_metadata_stops_before_fetch_with_an_actionable_error(self):
+        with patch.object(publish, "run", return_value="") as command:
+            with self.assertRaisesRegex(RuntimeError, "empty output"):
+                publish.sync_release("v0.1.0", "release-work", "a" * 40)
+        self.assertEqual(command.call_count, 1)
+
+    def test_non_json_metadata_stops_before_fetch_without_echoing_the_response(self):
+        with patch.object(publish, "run", return_value="unexpected-sensitive-output") as command:
+            with self.assertRaisesRegex(RuntimeError, "invalid JSON") as error:
+                publish.sync_release("v0.1.0", "release-work", "a" * 40)
+        self.assertNotIn("unexpected-sensitive-output", str(error.exception))
+        self.assertEqual(command.call_count, 1)
+
+    def test_github_subprocess_disables_pager_and_forced_tty_but_retains_auth(self):
+        result = subprocess.CompletedProcess([], 0, stdout="{}")
+        with patch.dict(publish.os.environ, {"GH_PAGER": "false", "PAGER": "false", "GH_FORCE_TTY": "100%", "GH_HOST": "enterprise.example", "GH_TOKEN": "fixture-only-token"}):
+            with patch.object(publish.subprocess, "run", return_value=result) as execute, redirect_stdout(StringIO()):
+                self.assertEqual(publish.run("gh", "api", "repos/fixture/repo", capture=True), "{}")
+        environment = execute.call_args.kwargs["env"]
+        self.assertEqual(environment["GH_PAGER"], "cat")
+        self.assertEqual(environment["PAGER"], "cat")
+        self.assertEqual(environment["GH_HOST"], "github.com")
+        self.assertEqual(environment["GH_TOKEN"], "fixture-only-token")
+        self.assertNotIn("GH_FORCE_TTY", environment)
 
 
 class PublishedAssetTests(unittest.TestCase):

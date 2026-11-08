@@ -89,7 +89,7 @@ class Settings(BaseSettings):
     APP_CONTACT_NAME: str = "AngelaMos LLC"
     APP_CONTACT_EMAIL: str = "support@certgames.com"
     APP_LICENSE_NAME: str = "MIT"
-    APP_LICENSE_URL: str = "https://github.com/CarterPerez-dev/fullstack-template/docs/templates/MIT"
+    APP_LICENSE_URL: str = "https://github.com/CarterPerez-dev/fullstack-template/blob/main/LICENSE"
 
     ENVIRONMENT: Environment = Environment.DEVELOPMENT
     DEBUG: bool = False

@@ -31,7 +31,7 @@ affect subsequent local generation. It refuses to overwrite another installation
 An installed release can explicitly use a checkout:
 
 ```bash
-template fastapi my-api --source /path/to/Fullstack-setup
+template fastapi my-api --source /path/to/fullstack-template
 ```
 
 With no project name, generation uses the current empty directory. An existing

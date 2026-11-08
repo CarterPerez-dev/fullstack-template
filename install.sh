@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-REPOSITORY="CarterPerez-dev/Fullstack-setup"
+REPOSITORY="CarterPerez-dev/fullstack-template"
 INSTALL_DIR="${TEMPLATE_INSTALL_DIR:-}"
 VERSION="${TEMPLATE_VERSION:-latest}"
 FROM_DIR=""
