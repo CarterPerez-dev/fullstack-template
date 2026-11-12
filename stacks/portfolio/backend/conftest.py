@@ -8,6 +8,7 @@ Test configuration, fixtures, and factories
 import sys
 from pathlib import Path
 
+
 sys.path.insert(0, str(Path(__file__).parent / "app"))
 
 import hashlib
@@ -54,14 +55,19 @@ async def test_engine():
     """
     url = os.environ.get("TEST_POSTGRES_URL")
     if not url:
-        pytest.skip("Portfolio integration tests require TEST_POSTGRES_URL for PostgreSQL JSONB")
+        pytest.skip(
+            "Portfolio integration tests require TEST_POSTGRES_URL for PostgreSQL JSONB"
+        )
     schema = f"template_test_{uuid4().hex}"
     admin = create_async_engine(url, poolclass = NullPool)
     async with admin.begin() as conn:
         await conn.execute(text(f'CREATE SCHEMA "{schema}"'))
     engine = create_async_engine(
-        url, poolclass = NullPool,
-        connect_args = {"server_settings": {"search_path": schema}},
+        url,
+        poolclass = NullPool,
+        connect_args = {"server_settings": {
+            "search_path": schema
+        }},
     )
     try:
         async with engine.begin() as conn:

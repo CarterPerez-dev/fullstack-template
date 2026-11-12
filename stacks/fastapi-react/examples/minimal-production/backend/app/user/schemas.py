@@ -36,9 +36,7 @@ class UserCreate(BaseSchema):
         Ensure password has minimum complexity
         """
         if not any(c.isupper() for c in v):
-            raise ValueError(
-                "Password must contain at least one uppercase letter"
-            )
+            raise ValueError("Password must contain at least one uppercase letter")
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain at least one digit")
         return v
@@ -69,9 +67,7 @@ class PasswordChange(BaseSchema):
         Ensure password has minimum complexity
         """
         if not any(c.isupper() for c in v):
-            raise ValueError(
-                "Password must contain at least one uppercase letter"
-            )
+            raise ValueError("Password must contain at least one uppercase letter")
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain at least one digit")
         return v

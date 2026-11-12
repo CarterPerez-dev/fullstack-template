@@ -26,9 +26,7 @@ class UserRepository(BaseRepository[User]):
         """
         Get user by email address
         """
-        result = await session.execute(
-            select(User).where(User.email == email)
-        )
+        result = await session.execute(select(User).where(User.email == email))
         return result.scalars().first()
 
     @classmethod
@@ -51,9 +49,7 @@ class UserRepository(BaseRepository[User]):
         """
         Check if email is already registered
         """
-        result = await session.execute(
-            select(User.id).where(User.email == email)
-        )
+        result = await session.execute(select(User.id).where(User.email == email))
         return result.scalars().first() is not None
 
     @classmethod

@@ -24,11 +24,7 @@ from core.responses import AUTH_401
 router = APIRouter(prefix = "/auth", tags = ["auth"])
 
 
-@router.post(
-    "/login",
-    response_model = TokenWithUserResponse,
-    responses = {**AUTH_401}
-)
+@router.post("/login", response_model = TokenWithUserResponse, responses = {**AUTH_401})
 async def login(
     auth_service: AuthServiceDep,
     form_data: Annotated[OAuth2PasswordRequestForm,

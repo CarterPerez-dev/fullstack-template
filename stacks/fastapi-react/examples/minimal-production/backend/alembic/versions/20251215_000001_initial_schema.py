@@ -26,11 +26,9 @@ def upgrade() -> None:
         sa.Column('email',
                   sa.String(length = 320),
                   nullable = False),
-        sa.Column(
-            'hashed_password',
-            sa.String(length = 1024),
-            nullable = False
-        ),
+        sa.Column('hashed_password',
+                  sa.String(length = 1024),
+                  nullable = False),
         sa.Column(
             'is_active',
             sa.Boolean(),
@@ -43,11 +41,9 @@ def upgrade() -> None:
             server_default = sa.text('now()'),
             nullable = False
         ),
-        sa.Column(
-            'updated_at',
-            sa.DateTime(timezone = True),
-            nullable = True
-        ),
+        sa.Column('updated_at',
+                  sa.DateTime(timezone = True),
+                  nullable = True),
         sa.PrimaryKeyConstraint('id',
                                 name = op.f('pk_users')),
         sa.UniqueConstraint('email',

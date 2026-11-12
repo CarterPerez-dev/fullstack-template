@@ -40,10 +40,7 @@ async def test_public_owner_enrollment_is_closed(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_user_duplicate_email(
-    client: AsyncClient,
-    test_user: User
-):
+async def test_create_user_duplicate_email(client: AsyncClient, test_user: User):
     """
     Public enrollment stays closed when accounts already exist
     """
@@ -96,10 +93,7 @@ async def test_get_user_by_id(
 
 
 @pytest.mark.asyncio
-async def test_get_user_unauthenticated(
-    client: AsyncClient,
-    test_user: User
-):
+async def test_get_user_unauthenticated(client: AsyncClient, test_user: User):
     """
     Get user without auth returns 401
     """

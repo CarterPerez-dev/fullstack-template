@@ -51,6 +51,7 @@ from .schemas import (
     SkillGroupResponse,
 )
 
+
 ResponseT = TypeVar("ResponseT", bound = BaseResponseSchema)
 logger = get_logger(__name__)
 
@@ -70,7 +71,6 @@ class PortfolioService:
     """
     Business logic for portfolio content.
     """
-
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
@@ -91,12 +91,9 @@ class PortfolioService:
             profile = ProfileResponse.model_validate(profile),
             settings = SiteSettingsResponse.model_validate(site_settings),
             certifications = [
-                CertificationResponse.model_validate(item)
-                for item in certifications
+                CertificationResponse.model_validate(item) for item in certifications
             ],
-            projects = [
-                ProjectResponse.model_validate(item) for item in projects
-            ],
+            projects = [ProjectResponse.model_validate(item) for item in projects],
             experience = [
                 ExperienceResponse.model_validate(item) for item in experience
             ],
@@ -105,8 +102,7 @@ class PortfolioService:
             ],
             links = [LinkResponse.model_validate(item) for item in links],
             custom_sections = [
-                CustomSectionResponse.model_validate(item)
-                for item in custom_sections
+                CustomSectionResponse.model_validate(item) for item in custom_sections
             ],
         )
 
@@ -122,21 +118,19 @@ class PortfolioService:
         """
         profile = await ProfileRepository.get_or_create(self.session)
         updates = data.model_dump(exclude_unset = True)
-        updated = await ProfileRepository.update(
-            self.session, profile, **updates
-        )
+        updated = await ProfileRepository.update(self.session, profile, **updates)
         return ProfileResponse.model_validate(updated)
 
-    async def update_settings(
-        self, data: SiteSettingsUpdate
-    ) -> SiteSettingsResponse:
+    async def update_settings(self, data: SiteSettingsUpdate) -> SiteSettingsResponse:
         """
         Update the site settings singleton.
         """
         site_settings = await SiteSettingsRepository.get_or_create(self.session)
         updates = data.model_dump(exclude_unset = True)
         updated = await SiteSettingsRepository.update(
-            self.session, site_settings, **updates
+            self.session,
+            site_settings,
+            **updates
         )
         return SiteSettingsResponse.model_validate(updated)
 
@@ -178,7 +172,9 @@ class PortfolioService:
         if row is None:
             raise ResourceNotFound(resource, str(item_id))
         updated = await repo.update(
-            self.session, row, **data.model_dump(exclude_unset = True)
+            self.session,
+            row,
+            **data.model_dump(exclude_unset = True)
         )
         return schema.model_validate(updated)
 
@@ -211,7 +207,6 @@ class MediaService:
     """
     Business logic for uploaded media.
     """
-
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
@@ -264,9 +259,7 @@ class MediaService:
         if len(contents) == 0:
             raise InvalidUpload(message = "Uploaded file is empty")
         if len(contents) > MAX_UPLOAD_BYTES:
-            raise InvalidUpload(
-                message = "File exceeds the maximum upload size"
-            )
+            raise InvalidUpload(message = "File exceeds the maximum upload size")
 
         original_filename = file.filename or "upload"
         extension = _EXTENSION_BY_TYPE[content_type]

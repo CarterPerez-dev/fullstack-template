@@ -52,11 +52,7 @@ class AuthService:
             raise InvalidCredentials()
 
         if new_hash:
-            await UserRepository.update_password(
-                self.session,
-                user,
-                new_hash
-            )
+            await UserRepository.update_password(self.session, user, new_hash)
 
         access_token = create_access_token(user.id)
 

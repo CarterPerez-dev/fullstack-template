@@ -30,21 +30,19 @@ class RefreshTokenRepository(BaseRepository[RefreshToken]):
         Serialize refresh and revocation for the token's user
         """
         user_id = await session.scalar(
-            select(RefreshToken.user_id).where(
-                RefreshToken.token_hash == token_hash
-            )
+            select(RefreshToken.user_id).where(RefreshToken.token_hash == token_hash)
         )
         if user_id is None:
             return None
         await session.execute(
-            select(User).where(User.id == user_id).with_for_update()
-            .execution_options(populate_existing = True)
+            select(User).where(User.id == user_id).with_for_update().execution_options(
+                populate_existing = True
+            )
         )
         result = await session.execute(
             select(RefreshToken).where(
                 RefreshToken.token_hash == token_hash
-            ).with_for_update()
-            .execution_options(populate_existing = True)
+            ).with_for_update().execution_options(populate_existing = True)
         )
         return result.scalars().first()
 
@@ -182,9 +180,7 @@ class RefreshTokenRepository(BaseRepository[RefreshToken]):
         Returns count of deleted tokens
         """
         result = await session.execute(
-            select(RefreshToken).where(
-                RefreshToken.expires_at < datetime.now(UTC)
-            )
+            select(RefreshToken).where(RefreshToken.expires_at < datetime.now(UTC))
         )
         tokens = result.scalars().all()
         for token in tokens:

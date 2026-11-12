@@ -102,7 +102,8 @@ async def list_certifications(
     List certifications
     """
     return await portfolio_service.list_items(
-        CertificationRepository, CertificationResponse
+        CertificationRepository,
+        CertificationResponse
     )
 
 
@@ -121,7 +122,9 @@ async def create_certification(
     Create a certification
     """
     return await portfolio_service.create_item(
-        CertificationRepository, CertificationResponse, data
+        CertificationRepository,
+        CertificationResponse,
+        data
     )
 
 
@@ -162,7 +165,9 @@ async def delete_certification(
     Delete a certification
     """
     await portfolio_service.delete_item(
-        CertificationRepository, item_id, "Certification"
+        CertificationRepository,
+        item_id,
+        "Certification"
     )
 
 
@@ -179,9 +184,7 @@ async def reorder_certifications(
     """
     Reorder certifications
     """
-    await portfolio_service.reorder_items(
-        CertificationRepository, data.ordered_ids
-    )
+    await portfolio_service.reorder_items(CertificationRepository, data.ordered_ids)
 
 
 @router.get(
@@ -196,9 +199,7 @@ async def list_projects(
     """
     List projects
     """
-    return await portfolio_service.list_items(
-        ProjectRepository, ProjectResponse
-    )
+    return await portfolio_service.list_items(ProjectRepository, ProjectResponse)
 
 
 @router.post(
@@ -215,9 +216,7 @@ async def create_project(
     """
     Create a project
     """
-    return await portfolio_service.create_item(
-        ProjectRepository, ProjectResponse, data
-    )
+    return await portfolio_service.create_item(ProjectRepository, ProjectResponse, data)
 
 
 @router.patch(
@@ -235,7 +234,11 @@ async def update_project(
     Update a project
     """
     return await portfolio_service.update_item(
-        ProjectRepository, ProjectResponse, item_id, data, "Project"
+        ProjectRepository,
+        ProjectResponse,
+        item_id,
+        data,
+        "Project"
     )
 
 
@@ -283,9 +286,7 @@ async def list_experience(
     """
     List experience entries
     """
-    return await portfolio_service.list_items(
-        ExperienceRepository, ExperienceResponse
-    )
+    return await portfolio_service.list_items(ExperienceRepository, ExperienceResponse)
 
 
 @router.post(
@@ -303,7 +304,9 @@ async def create_experience(
     Create an experience entry
     """
     return await portfolio_service.create_item(
-        ExperienceRepository, ExperienceResponse, data
+        ExperienceRepository,
+        ExperienceResponse,
+        data
     )
 
 
@@ -322,7 +325,11 @@ async def update_experience(
     Update an experience entry
     """
     return await portfolio_service.update_item(
-        ExperienceRepository, ExperienceResponse, item_id, data, "Experience"
+        ExperienceRepository,
+        ExperienceResponse,
+        item_id,
+        data,
+        "Experience"
     )
 
 
@@ -339,9 +346,7 @@ async def delete_experience(
     """
     Delete an experience entry
     """
-    await portfolio_service.delete_item(
-        ExperienceRepository, item_id, "Experience"
-    )
+    await portfolio_service.delete_item(ExperienceRepository, item_id, "Experience")
 
 
 @router.post(
@@ -372,9 +377,7 @@ async def list_skill_groups(
     """
     List skill groups
     """
-    return await portfolio_service.list_items(
-        SkillGroupRepository, SkillGroupResponse
-    )
+    return await portfolio_service.list_items(SkillGroupRepository, SkillGroupResponse)
 
 
 @router.post(
@@ -392,7 +395,9 @@ async def create_skill_group(
     Create a skill group
     """
     return await portfolio_service.create_item(
-        SkillGroupRepository, SkillGroupResponse, data
+        SkillGroupRepository,
+        SkillGroupResponse,
+        data
     )
 
 
@@ -411,7 +416,11 @@ async def update_skill_group(
     Update a skill group
     """
     return await portfolio_service.update_item(
-        SkillGroupRepository, SkillGroupResponse, item_id, data, "Skill group"
+        SkillGroupRepository,
+        SkillGroupResponse,
+        item_id,
+        data,
+        "Skill group"
     )
 
 
@@ -428,9 +437,7 @@ async def delete_skill_group(
     """
     Delete a skill group
     """
-    await portfolio_service.delete_item(
-        SkillGroupRepository, item_id, "Skill group"
-    )
+    await portfolio_service.delete_item(SkillGroupRepository, item_id, "Skill group")
 
 
 @router.post(
@@ -478,9 +485,7 @@ async def create_link(
     """
     Create a link
     """
-    return await portfolio_service.create_item(
-        LinkRepository, LinkResponse, data
-    )
+    return await portfolio_service.create_item(LinkRepository, LinkResponse, data)
 
 
 @router.patch(
@@ -498,7 +503,11 @@ async def update_link(
     Update a link
     """
     return await portfolio_service.update_item(
-        LinkRepository, LinkResponse, item_id, data, "Link"
+        LinkRepository,
+        LinkResponse,
+        item_id,
+        data,
+        "Link"
     )
 
 
@@ -547,7 +556,8 @@ async def list_custom_sections(
     List custom sections
     """
     return await portfolio_service.list_items(
-        CustomSectionRepository, CustomSectionResponse
+        CustomSectionRepository,
+        CustomSectionResponse
     )
 
 
@@ -566,7 +576,9 @@ async def create_custom_section(
     Create a custom section
     """
     return await portfolio_service.create_item(
-        CustomSectionRepository, CustomSectionResponse, data
+        CustomSectionRepository,
+        CustomSectionResponse,
+        data
     )
 
 
@@ -607,7 +619,9 @@ async def delete_custom_section(
     Delete a custom section
     """
     await portfolio_service.delete_item(
-        CustomSectionRepository, item_id, "Custom section"
+        CustomSectionRepository,
+        item_id,
+        "Custom section"
     )
 
 
@@ -624,9 +638,7 @@ async def reorder_custom_sections(
     """
     Reorder custom sections
     """
-    await portfolio_service.reorder_items(
-        CustomSectionRepository, data.ordered_ids
-    )
+    await portfolio_service.reorder_items(CustomSectionRepository, data.ordered_ids)
 
 
 @router.get(
@@ -653,7 +665,8 @@ async def list_media(
 async def upload_media(
     media_service: MediaServiceDep,
     _: AdminOnly,
-    file: Annotated[UploadFile, File()],
+    file: Annotated[UploadFile,
+                    File()],
 ) -> MediaResponse:
     """
     Upload a media file

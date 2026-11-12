@@ -123,7 +123,8 @@ class AuthService:
         device_id: str | None = None,
         device_name: str | None = None,
         ip_address: str | None = None,
-    ) -> tuple[TokenResponse, str]:
+    ) -> tuple[TokenResponse,
+               str]:
         """
         Refresh access token using refresh token
 
@@ -149,20 +150,14 @@ class AuthService:
         if stored_token.is_expired:
             raise TokenError(message = "Refresh token expired")
 
-        user = await UserRepository.get_by_id(
-            self.session,
-            stored_token.user_id
-        )
+        user = await UserRepository.get_by_id(self.session, stored_token.user_id)
         if user is None or not user.is_active:
             raise TokenError(message = "User not found or inactive")
 
         if stored_token.token_version != user.token_version:
             raise TokenRevokedError()
 
-        await RefreshTokenRepository.revoke_token(
-            self.session,
-            stored_token
-        )
+        await RefreshTokenRepository.revoke_token(self.session, stored_token)
 
         access_token = create_access_token(user.id, user.token_version)
 
@@ -205,9 +200,9 @@ class AuthService:
         )
 
         return MobileLoginResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            user=UserResponse.model_validate(user),
+            access_token = access_token,
+            refresh_token = refresh_token,
+            user = UserResponse.model_validate(user),
         )
 
     async def refresh_tokens_mobile(
@@ -228,8 +223,8 @@ class AuthService:
         )
 
         return MobileTokenResponse(
-            access_token=token_response.access_token,
-            refresh_token=new_refresh_token,
+            access_token = token_response.access_token,
+            refresh_token = new_refresh_token,
         )
 
     async def logout(

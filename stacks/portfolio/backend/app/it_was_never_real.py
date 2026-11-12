@@ -20,9 +20,7 @@ def register_psyop_handler(app: FastAPI) -> None:
         if exc.status_code == 404:
             return JSONResponse(
                 status_code = 404,
-                content = {
-                    "detail": "It was never real. The endpoint was a psyop."
-                },
+                content = {"detail": "It was never real. The endpoint was a psyop."},
             )
         return JSONResponse(
             status_code = exc.status_code,

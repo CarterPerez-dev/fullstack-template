@@ -28,9 +28,7 @@ class UserRepository(BaseRepository[User]):
         """
         Get user by email address
         """
-        result = await session.execute(
-            select(User).where(User.email == email)
-        )
+        result = await session.execute(select(User).where(User.email == email))
         return result.scalars().first()
 
     @classmethod
@@ -53,9 +51,7 @@ class UserRepository(BaseRepository[User]):
         """
         Check if email is already registered
         """
-        result = await session.execute(
-            select(User.id).where(User.email == email)
-        )
+        result = await session.execute(select(User.id).where(User.email == email))
         return result.scalars().first() is not None
 
     @classmethod
@@ -94,14 +90,13 @@ class UserRepository(BaseRepository[User]):
         Replace the verified password without overwriting a concurrent change.
         """
         result = await session.execute(
-            update(User)
-            .where(User.id == user.id, User.hashed_password == user.hashed_password)
-            .values(
+            update(User).where(
+                User.id == user.id,
+                User.hashed_password == user.hashed_password
+            ).values(
                 hashed_password = hashed_password,
                 token_version = User.token_version + int(invalidate_sessions),
-            )
-            .returning(User.id)
-            .execution_options(synchronize_session = False)
+            ).returning(User.id).execution_options(synchronize_session = False)
         )
         if result.scalar_one_or_none() is None:
             raise InvalidCredentials()
@@ -118,9 +113,9 @@ class UserRepository(BaseRepository[User]):
         Invalidate all user tokens
         """
         await session.execute(
-            update(User).where(User.id == user.id)
-            .values(token_version = User.token_version + 1)
-            .execution_options(synchronize_session = False)
+            update(User).where(User.id == user.id).values(
+                token_version = User.token_version + 1
+            ).execution_options(synchronize_session = False)
         )
         await session.refresh(user)
         return user

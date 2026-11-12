@@ -117,14 +117,7 @@ class Settings(BaseSettings):
         "http://localhost:9426",
     ]
     CORS_ALLOW_CREDENTIALS: bool = True
-    CORS_ALLOW_METHODS: list[str] = [
-        "GET",
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE",
-        "OPTIONS"
-    ]
+    CORS_ALLOW_METHODS: list[str] = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     CORS_ALLOW_HEADERS: list[str] = ["*"]
 
     RATE_LIMIT_DEFAULT: str = "100/minute"
@@ -133,11 +126,7 @@ class Settings(BaseSettings):
     PAGINATION_DEFAULT_SIZE: int = Field(default = 20, ge = 1, le = 100)
     PAGINATION_MAX_SIZE: int = Field(default = 100, ge = 1, le = 500)
 
-    LOG_LEVEL: Literal["DEBUG",
-                       "INFO",
-                       "WARNING",
-                       "ERROR",
-                       "CRITICAL"] = "INFO"
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     LOG_JSON_FORMAT: bool = True
 
     @field_validator("ADMIN_EMAIL", mode = "before")
@@ -157,9 +146,7 @@ class Settings(BaseSettings):
             if self.DEBUG:
                 raise ValueError("DEBUG must be False in production")
             if self.CORS_ORIGINS == ["*"]:
-                raise ValueError(
-                    "CORS_ORIGINS cannot be ['*'] in production"
-                )
+                raise ValueError("CORS_ORIGINS cannot be ['*'] in production")
         return self
 
 

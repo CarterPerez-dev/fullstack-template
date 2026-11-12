@@ -24,6 +24,7 @@ from .models import (
     SkillGroup,
 )
 
+
 ModelT = TypeVar("ModelT", bound = Profile | SiteSettings)
 OrderedModelT = TypeVar(
     "OrderedModelT",
@@ -35,7 +36,6 @@ class SingletonRepository(BaseRepository[ModelT], Generic[ModelT]):
     """
     Repository for a single-row table.
     """
-
     @classmethod
     async def get_or_create(cls, session: AsyncSession) -> ModelT:
         """
@@ -45,8 +45,9 @@ class SingletonRepository(BaseRepository[ModelT], Generic[ModelT]):
         instance = result.scalar_one_or_none()
         if instance is None:
             await session.execute(
-                insert(cls.model).values(singleton_key = True)
-                .on_conflict_do_nothing(index_elements = ["singleton_key"])
+                insert(cls.model).values(singleton_key = True).on_conflict_do_nothing(
+                    index_elements = ["singleton_key"]
+                )
             )
             result = await session.execute(select(cls.model))
             instance = result.scalar_one()
@@ -57,7 +58,6 @@ class OrderedRepository(BaseRepository[OrderedModelT], Generic[OrderedModelT]):
     """
     Repository for an ordered list resource with display_order.
     """
-
     @classmethod
     async def list_ordered(cls, session: AsyncSession) -> Sequence[OrderedModelT]:
         """
@@ -154,7 +154,5 @@ class MediaRepository(BaseRepository[Media]):
         """
         Return all media rows, newest first.
         """
-        result = await session.execute(
-            select(Media).order_by(Media.created_at.desc())
-        )
+        result = await session.execute(select(Media).order_by(Media.created_at.desc()))
         return result.scalars().all()

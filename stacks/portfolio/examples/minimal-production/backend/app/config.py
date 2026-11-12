@@ -83,11 +83,7 @@ class Settings(BaseSettings):
 
     SECRET_KEY: SecretStr = Field(..., min_length = 32)
     JWT_ALGORITHM: Literal["HS256", "HS384", "HS512"] = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
-        default = 30,
-        ge = 5,
-        le = 120
-    )
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default = 30, ge = 5, le = 120)
 
     CORS_ORIGINS: list[str] = [
         "http://localhost",
@@ -95,14 +91,7 @@ class Settings(BaseSettings):
         "http://localhost:8420",
     ]
     CORS_ALLOW_CREDENTIALS: bool = True
-    CORS_ALLOW_METHODS: list[str] = [
-        "GET",
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE",
-        "OPTIONS"
-    ]
+    CORS_ALLOW_METHODS: list[str] = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     CORS_ALLOW_HEADERS: list[str] = ["*"]
 
     PAGINATION_DEFAULT_SIZE: int = Field(default = 20, ge = 1, le = 100)
@@ -117,9 +106,7 @@ class Settings(BaseSettings):
             if self.DEBUG:
                 raise ValueError("DEBUG must be False in production")
             if self.CORS_ORIGINS == ["*"]:
-                raise ValueError(
-                    "CORS_ORIGINS cannot be ['*'] in production"
-                )
+                raise ValueError("CORS_ORIGINS cannot be ['*'] in production")
         return self
 
 

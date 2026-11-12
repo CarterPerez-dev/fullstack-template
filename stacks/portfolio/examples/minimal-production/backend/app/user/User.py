@@ -31,7 +31,5 @@ class User(Base, UUIDMixin, TimestampMixin):
         unique = True,
         index = True,
     )
-    hashed_password: Mapped[str] = mapped_column(
-        String(PASSWORD_HASH_MAX_LENGTH)
-    )
+    hashed_password: Mapped[str] = mapped_column(String(PASSWORD_HASH_MAX_LENGTH))
     is_active: Mapped[bool] = mapped_column(default = True)

@@ -32,7 +32,7 @@ This project follows strict coding standards:
 Formatting
 ----------
 
-- **Formatter**: Use ``yapf`` for code formatting
+- **Formatter**: Use ``yang`` for code formatting
 - **Linter**: Use ``ruff`` for linting only (not formatting)
 - **Type hints**: Full type hints everywhere using modern syntax (``str | None``, ``list[str]``)
 - **Docstrings**: Vertical multi-line format only
@@ -45,7 +45,7 @@ Run formatters and linters
 ::
 
     # Format code
-    yapf -ir src/
+    yang -ir src/
 
     # Lint
     ruff check src/

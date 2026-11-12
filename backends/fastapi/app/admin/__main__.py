@@ -15,7 +15,7 @@ from user.service import UserService
 
 
 async def create_administrator(email: str, password: str) -> None:
-    data = AdminUserCreate(email=email, password=password, role=UserRole.ADMIN)
+    data = AdminUserCreate(email = email, password = password, role = UserRole.ADMIN)
     sessionmanager.init(str(settings.DATABASE_URL))
     try:
         async with sessionmanager.session() as session:
@@ -25,9 +25,11 @@ async def create_administrator(email: str, password: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Create an administrator from the trusted server console")
-    parser.add_argument("--email", required=True)
-    parser.add_argument("--password-stdin", action="store_true")
+    parser = argparse.ArgumentParser(
+        description = "Create an administrator from the trusted server console"
+    )
+    parser.add_argument("--email", required = True)
+    parser.add_argument("--password-stdin", action = "store_true")
     args = parser.parse_args()
     if args.password_stdin:
         password = sys.stdin.readline().rstrip("\r\n")
@@ -40,7 +42,10 @@ def main() -> int:
     try:
         asyncio.run(create_administrator(args.email, password))
     except Exception as exc:
-        parser.exit(1, f"Administrator creation failed ({type(exc).__name__}). Check account existence, input requirements, and database availability.\n")
+        parser.exit(
+            1,
+            f"Administrator creation failed ({type(exc).__name__}). Check account existence, input requirements, and database availability.\n"
+        )
     print("Administrator created. Existing accounts were not modified.")
     return 0
 

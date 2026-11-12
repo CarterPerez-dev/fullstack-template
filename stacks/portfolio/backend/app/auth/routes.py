@@ -45,11 +45,7 @@ from core.responses import AUTH_401
 router = APIRouter(prefix = "/auth", tags = ["auth"])
 
 
-@router.post(
-    "/login",
-    response_model = TokenWithUserResponse,
-    responses = {**AUTH_401}
-)
+@router.post("/login", response_model = TokenWithUserResponse, responses = {**AUTH_401})
 @limiter.limit(settings.RATE_LIMIT_AUTH)
 async def login(
     request: Request,
@@ -71,11 +67,7 @@ async def login(
     return result
 
 
-@router.post(
-    "/refresh",
-    response_model = TokenResponse,
-    responses = {**AUTH_401}
-)
+@router.post("/refresh", response_model = TokenResponse, responses = {**AUTH_401})
 async def refresh_token(
     response: Response,
     auth_service: AuthServiceDep,
@@ -112,9 +104,9 @@ async def login_mobile(
     Mobile login - returns both tokens in response body
     """
     return await auth_service.login_mobile(
-        email=form_data.username,
-        password=form_data.password,
-        ip_address=ip,
+        email = form_data.username,
+        password = form_data.password,
+        ip_address = ip,
     )
 
 
@@ -133,7 +125,7 @@ async def refresh_token_mobile(
     """
     return await auth_service.refresh_tokens_mobile(
         data.refresh_token,
-        ip_address=ip,
+        ip_address = ip,
     )
 
 

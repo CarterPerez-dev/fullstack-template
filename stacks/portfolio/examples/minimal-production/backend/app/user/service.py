@@ -39,8 +39,7 @@ class UserService:
         """
         Register a new user
         """
-        if await UserRepository.email_exists(self.session,
-                                             user_data.email):
+        if await UserRepository.email_exists(self.session, user_data.email):
             raise EmailAlreadyExists(user_data.email)
 
         hashed = await hash_password(user_data.password)
@@ -86,9 +85,5 @@ class UserService:
         """
         Deactivate user account
         """
-        updated = await UserRepository.update(
-            self.session,
-            user,
-            is_active = False
-        )
+        updated = await UserRepository.update(self.session, user, is_active = False)
         return UserResponse.model_validate(updated)
